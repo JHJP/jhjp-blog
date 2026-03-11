@@ -103,12 +103,6 @@ where the six factors span contract depth, product diversity, tenure, and premiu
 
 This produces hundreds of unique persona codes. For each persona-product combination, the historical conversion rate on the training set provides the rule-track score.
 
-> [!info] Interactive Element
-> This section contained an interactive visualization in the original post.
-
-> [!info] Interactive Element
-> This section contained an interactive visualization in the original post.
-
 ## Feature Engineering
 
 Over a hundred engineered features derived from a large Spark SQL pipeline joining multiple source tables. All features use a one-month lag relative to the campaign month.

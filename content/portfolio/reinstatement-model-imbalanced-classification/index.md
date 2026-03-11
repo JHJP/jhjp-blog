@@ -112,12 +112,6 @@ where $\alpha \in [0, 1]$ controls the $\ell_1 / \ell_2$ mixing.
 
 The geometric difference between $\ell_1$ and $\ell_2$ penalties explains their distinct behaviors. The constraint region for Ridge is a circle ($\|\boldsymbol{\beta}\|_2^2 \leq t$); for Lasso, it is a diamond ($\|\boldsymbol{\beta}\|_1 \leq t$). The diamond's corners lie on the coordinate axes, making it likely that the loss function's contours intersect the constraint boundary at a vertex — producing an exact zero in the coefficient.
 
-> [!info] Interactive Element
-> This section contained an interactive visualization in the original post.
-
-> [!info] Interactive Element
-> This section contained an interactive visualization in the original post.
-
 ### The Choice for This Model
 
 The reinstatement model's base logistic regression uses **pure Ridge** ($\alpha = 0$) with a moderate regularization strength. This reflects the feature structure: most features carry some predictive signal (so Lasso's variable elimination is undesirable), but multicollinearity among premium, tenure, and coverage features requires shrinkage for stable coefficient estimation. Ridge's distributed weight allocation across correlated features produces more interpretable and stable coefficients than Lasso's arbitrary selection.

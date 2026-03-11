@@ -81,9 +81,7 @@ Both the logistic regression base and the GBT residual model receive these weigh
 
 The two-stage residual learning pipeline:
 
-```{mermaid}
-%%| fig-cap: "Two-stage residual learning architecture. The logistic regression captures linear structure; the GBT corrects systematic errors in the residual space."
-%%| fig-width: 7
+```mermaid
 flowchart LR
     X["Feature Vector<br/>𝐱ᵢ ∈ ℝ³²"] --> LR["Stage 1<br/>Logistic Regression<br/>(ℓ₂-regularized)"]
     LR --> P["p̂_base"]

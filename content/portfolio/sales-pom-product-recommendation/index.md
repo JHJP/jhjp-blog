@@ -23,9 +23,7 @@ The task: for each customer in a population of hundreds of thousands, rank 20+ p
 
 ## Hybrid Architecture
 
-```{mermaid}
-%%| fig-cap: "ML/Rule hybrid architecture. Products with sufficient positive samples train per-product two-stage ensembles; sparse products use persona-based conversion rate lookups. Both tracks merge via smoothed lift calibration for unified ranking."
-%%| fig-width: 8
+```mermaid
 flowchart TD
     DATA["Training Data<br/>(20+ product targets)"] --> SPLIT{"n₊ ≥ 1,000?"}
 
@@ -142,7 +140,7 @@ For product groups with sufficient positive samples, each trains an independent 
 
 ### Handling Class Imbalance
 
-Product purchase is a rare event — base rates range from $< 0.1\%$ for niche products to a few percent for popular ones. Each per-product binary classifier applies cost-sensitive instance weighting:
+Product purchase is a rare event — base rates vary by orders of magnitude across product groups. Each per-product binary classifier applies cost-sensitive instance weighting:
 
 $$
 w_i = \begin{cases}
@@ -151,7 +149,7 @@ n_- / n_+ & \text{if } y_i = 1 \\
 \end{cases}
 $$
 
-where $n_-$ and $n_+$ are computed per product target on the training set. With imbalance ratios exceeding 30:1 for some products, this weighting is essential — without it, the logistic regression converges to near-zero predictions for the minority class. The weighting is applied only to the Stage 1 logistic regression; the Stage 2 XGBoost operates on residuals (a continuous regression target) where the class imbalance is already absorbed into the residual distribution.
+where $n_-$ and $n_+$ are computed per product target on the training set. With extreme imbalance ratios for some products, this weighting is essential — without it, the logistic regression converges to near-zero predictions for the minority class. The weighting is applied only to the Stage 1 logistic regression; the Stage 2 XGBoost operates on residuals (a continuous regression target) where the class imbalance is already absorbed into the residual distribution.
 
 ### Stage 1: Logistic Regression (Base Model)
 

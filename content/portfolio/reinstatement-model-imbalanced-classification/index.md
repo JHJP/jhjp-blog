@@ -17,7 +17,7 @@ draft: false
 
 ## Problem Statement
 
-When an insurance policy lapses due to missed premiums, the customer has a limited window to reinstate it. The business runs monthly outbound campaigns targeting recently lapsed customers, but the reinstatement rate is in the single digits — the vast majority of outreach is directed at customers who will not return.
+When an insurance policy lapses due to missed premiums, the customer has a limited window to reinstate it. The business runs monthly outbound campaigns targeting recently lapsed customers, but the reinstatement rate is very low — the vast majority of outreach is directed at customers who will not return.
 
 The task: predict which recently lapsed customers will reinstate within a 45-day window from the campaign reference date. The constraint: severe class imbalance and a target population restricted to customers who lapsed within the preceding 90 days.
 

@@ -16,7 +16,7 @@ draft: false
 
 ## Problem Statement
 
-A large insurance company collects monthly premiums from over a million policies. Some payments fail. The business requires answers to two fundamentally different questions: *which* payments are likely to fail (prediction), and *what can be changed* to prevent failure (causal inference).
+A large insurance company collects monthly premiums from a large portfolio of policies. Some payments fail. The business requires answers to two fundamentally different questions: *which* payments are likely to fail (prediction), and *what can be changed* to prevent failure (causal inference).
 
 These demand distinct statistical frameworks. Prediction requires discriminative modeling — ranking policies by failure risk. Causal inference requires isolating the effect of an intervention (e.g., changing the billing day) from the confounding structure that generated the observational data. I built both.
 
@@ -126,9 +126,7 @@ Time-based OOS split: 70% of available months for training (minimum 6 months), 3
 
 ### The Endogeneity Problem
 
-```{mermaid}
-%%| fig-cap: "Causal DAG. Confounders W (income stability, risk tolerance, tenure) affect both the treatment T (billing day choice) and the outcome Y (payment success). A naive regression of Y on T ignores the backdoor path T ← W → Y, producing biased treatment effect estimates."
-%%| fig-width: 5
+```mermaid
 flowchart TD
     W["Confounders (W)<br/>Income stability, tenure,<br/>risk tolerance, ..."] --> T["Treatment (T)<br/>Billing day assignment"]
     W --> Y["Outcome (Y)<br/>Payment success"]
@@ -145,9 +143,7 @@ A naive regression of payment success on billing day indicators, even with covar
 
 ### LinearDML Framework
 
-```{mermaid}
-%%| fig-cap: "Double Machine Learning pipeline. Stage 1 removes confounding by orthogonalizing both Y and T with respect to W using cross-fitted nuisance models. Stage 2 estimates the causal effect θ from the residualized quantities."
-%%| fig-width: 8
+```mermaid
 flowchart LR
     subgraph Stage1["Stage 1: Orthogonalization"]
         direction TB
@@ -207,7 +203,7 @@ The vector $\boldsymbol{\theta}$ contains the causal effects, free of confoundin
 
 The treatments are variables the company can intervene on:
 
-- **Billing schedule** — seven possible billing days distributed across the month (early, mid, late), encoded as binary indicators relative to a mid-month reference day
+- **Billing schedule** — several possible billing days distributed across the month (early, mid, late), encoded as binary indicators relative to a mid-month reference day
 - **Payment instrument routing** — bank transfer vs. card (for the card submodel, further decomposed by card issuer with a reference category)
 
 The model is estimated separately for bank transfer and card payment populations due to structurally different treatment spaces.

@@ -15,7 +15,7 @@ draft: false
 
 ## Context
 
-This post is a companion to the [existing-customer product recommendation model](../sales-pom-product-recommendation/index.qmd). Both use the same architecture — persona-based clustering, two-stage ML/Rule hybrid scoring, smoothed lift calibration — but target fundamentally different populations. The existing-customer model targets active policyholders ($\geq 1$ active contract). This model targets **lapsed customers**: those with zero active contracts who have lapsed or terminated their policies.
+This post is a companion to the [[sales-pom-product-recommendation|existing-customer product recommendation model]]. Both use the same architecture — persona-based clustering, two-stage ML/Rule hybrid scoring, smoothed lift calibration — but target fundamentally different populations. The existing-customer model targets active policyholders ($\geq 1$ active contract). This model targets **lapsed customers**: those with zero active contracts who have lapsed or terminated their policies.
 
 The distinction is material. These customers have no current portfolio to cross-sell against. Their value distribution skews heavily toward the lowest tier. And the population is roughly an order of magnitude smaller.
 
@@ -100,9 +100,7 @@ Top-3 selection per customer by lift score.
 
 ## What the Comparison Reveals
 
-```{mermaid}
-%%| fig-cap: "Structural comparison of the active-customer and lapsed-customer recommendation systems. The same architecture produces fundamentally different ML/Rule track proportions."
-%%| fig-width: 7
+```mermaid
 flowchart TD
     subgraph ACTIVE["Active-Customer Model"]
         direction LR

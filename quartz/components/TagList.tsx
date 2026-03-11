@@ -34,10 +34,6 @@ TagList.css = `
   flex-wrap: wrap;
 }
 
-.section-li > .section > .tags {
-  justify-content: flex-end;
-}
-  
 .tags > li {
   display: inline-block;
   white-space: nowrap;
@@ -45,12 +41,6 @@ TagList.css = `
   overflow-wrap: normal;
 }
 
-a.internal.tag-link {
-  border-radius: 8px;
-  background-color: var(--highlight);
-  padding: 0.2rem 0.4rem;
-  margin: 0 0.1rem;
-}
 `
 
 export default (() => TagList) satisfies QuartzComponentConstructor

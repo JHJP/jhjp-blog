@@ -7,28 +7,57 @@ ul.section-ul {
 }
 
 li.section-li {
-  margin-bottom: 1em;
+  margin-bottom: 0;
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid rgba(150, 150, 150, 0.15);
+  position: relative;
+
+  @media (min-width: 600px) {
+    padding: 1.5rem 0.75rem;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   & > .section {
     display: grid;
-    grid-template-columns: fit-content(8em) 1fr;
+    grid-template-columns: 1fr;
 
-    & > .desc > h3 > a {
-      background-color: transparent;
+    & > .desc {
+      order: 1;
+
+      & > h3 {
+        margin-bottom: 0.25rem;
+
+        & > a {
+          background-color: transparent;
+
+          &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+          }
+        }
+      }
+
+      & > .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0.5rem 0 0 0;
+        padding: 0;
+        list-style: none;
+        position: relative;
+        z-index: 1;
+      }
     }
 
-    & > .desc > .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin: 0.4rem 0 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    & .meta {
-      margin: 0 1em 0 0;
-      opacity: 0.6;
+    & > .meta {
+      order: 2;
+      margin: 0.5rem 0 0 0;
+      opacity: 0.5;
+      font-size: 0.82rem;
     }
   }
 }

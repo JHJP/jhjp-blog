@@ -17,6 +17,7 @@ article {
     line-height: 1.8;
     letter-spacing: -0.003em;
     margin-bottom: 1.25rem;
+    color: var(--darkgray);
   }
 
   // Elegant heading hierarchy
@@ -27,6 +28,7 @@ article {
     margin-top: 3rem;
     margin-bottom: 1rem;
     line-height: 1.2;
+    color: var(--dark);
   }
 
   h2 {
@@ -38,6 +40,7 @@ article {
     padding-bottom: 0.4rem;
     border-bottom: 1px solid var(--lightgray);
     line-height: 1.3;
+    color: var(--dark);
   }
 
   h3 {
@@ -47,6 +50,7 @@ article {
     margin-top: 2rem;
     margin-bottom: 0.5rem;
     line-height: 1.35;
+    color: var(--dark);
   }
 
   // Better list readability
@@ -161,6 +165,27 @@ a.internal.tag-link {
     background: var(--secondary);
     color: var(--light);
     border-color: var(--secondary);
+  }
+}
+
+// ─── Tactile Hover States ────────────────────────────────────────
+
+.section-li {
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--highlight);
+  }
+}
+
+.section .desc h3 a.internal {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark);
+
+  &:hover {
+    color: var(--secondary);
   }
 }
 

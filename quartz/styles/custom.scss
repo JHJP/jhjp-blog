@@ -1,0 +1,417 @@
+@use "./base.scss";
+@use "./variables.scss" as *;
+
+// ═══════════════════════════════════════════════════════════════════
+// Premium UI/UX — Jay Park AI & ML Engineering
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── Typography & Reading Experience ─────────────────────────────
+// Lock article body to optimal ~70ch reading column
+
+article {
+  max-width: 70ch;
+
+  // Refined paragraph spacing
+  p {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    letter-spacing: -0.003em;
+    margin-bottom: 1.25rem;
+  }
+
+  // Elegant heading hierarchy
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--lightgray);
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.35;
+  }
+
+  // Better list readability
+  li {
+    line-height: 1.75;
+    margin-bottom: 0.25rem;
+  }
+
+  // Refined blockquotes (margin notes from migration)
+  blockquote {
+    border-left: 3px solid var(--tertiary);
+    background: var(--highlight);
+    padding: 0.75rem 1.25rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.5rem 0;
+
+    p {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      color: var(--darkgray);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    // Margin note label
+    strong {
+      color: var(--secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  // Better inline code
+  code {
+    font-size: 0.85em;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: var(--highlight);
+    border: 1px solid var(--lightgray);
+  }
+
+  // Display math breathing room
+  .katex-display {
+    margin: 2rem 0;
+    padding: 0.5rem 0;
+  }
+
+  // Table polish
+  .table-container > table {
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 0.92rem;
+
+    th {
+      background: var(--highlight);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      padding: 0.6rem 0.8rem;
+    }
+
+    td {
+      padding: 0.5rem 0.8rem;
+    }
+
+    tr {
+      transition: background-color 0.15s ease;
+      &:hover {
+        background-color: var(--highlight);
+      }
+    }
+  }
+}
+
+// ─── Article Title & Meta ────────────────────────────────────────
+
+.article-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin-bottom: 0.25rem;
+}
+
+.content-meta {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--lightgray);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+// ─── Tag Pills ───────────────────────────────────────────────────
+
+a.internal.tag-link {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  background: var(--highlight);
+  border: 1px solid var(--lightgray);
+  transition: all 0.2s ease;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--secondary);
+    color: var(--light);
+    border-color: var(--secondary);
+  }
+}
+
+// ─── Page Title (Left Sidebar) ───────────────────────────────────
+
+.page-title {
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+// ─── Explorer Polish ─────────────────────────────────────────────
+
+.explorer {
+  .folder-title,
+  .folder-button {
+    font-weight: 500;
+    font-size: 0.88rem;
+  }
+
+  a {
+    font-size: 0.85rem;
+    padding: 0.15rem 0;
+    transition: color 0.15s ease;
+  }
+}
+
+// ─── Graph Component — Refined & Elegant ─────────────────────────
+
+.graph {
+  > h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray);
+    margin-bottom: 0.25rem;
+  }
+
+  > .graph-outer {
+    border-radius: 8px;
+    border: 1px solid var(--lightgray);
+    height: 280px;
+    background: var(--light);
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: var(--gray);
+    }
+  }
+
+  // Global graph modal
+  > .global-graph-outer {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.3);
+
+    > .global-graph-container {
+      border-radius: 12px;
+      border: 1px solid var(--lightgray);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+
+// Graph node styling via D3 — override defaults
+// These use the CSS variables that D3 reads at runtime
+:root {
+  --graph-node-active: var(--secondary);
+  --graph-node-inactive: var(--gray);
+  --graph-link: var(--lightgray);
+}
+
+// ─── TOC Refinement ──────────────────────────────────────────────
+
+.toc {
+  .toc-header {
+    h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray);
+    }
+  }
+
+  .depth-0 > li > a {
+    font-weight: 500;
+  }
+
+  a {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--darkgray);
+    opacity: 0.75;
+    transition: opacity 0.15s ease, color 0.15s ease;
+
+    &:hover,
+    &.in-view {
+      opacity: 1;
+      color: var(--secondary);
+    }
+  }
+}
+
+// ─── Backlinks ───────────────────────────────────────────────────
+
+.backlinks {
+  h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray);
+  }
+
+  a {
+    font-size: 0.85rem;
+  }
+}
+
+// ─── Search ──────────────────────────────────────────────────────
+
+button#search-button {
+  border-radius: 8px;
+  border: 1px solid var(--lightgray);
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--gray);
+  }
+}
+
+// ─── Footer ──────────────────────────────────────────────────────
+
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--lightgray);
+  opacity: 0.6;
+
+  a {
+    font-weight: 400;
+  }
+}
+
+// ─── Code Blocks ─────────────────────────────────────────────────
+
+pre {
+  border-radius: 8px;
+  border: 1px solid var(--lightgray);
+  font-size: 0.85rem;
+  margin: 1.5rem 0;
+}
+
+// ─── Callouts (Obsidian-style) ───────────────────────────────────
+
+.callout {
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+// ─── Breadcrumbs ─────────────────────────────────────────────────
+
+.breadcrumb-container {
+  font-size: 0.82rem;
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+}
+
+// ─── Mermaid Diagrams ────────────────────────────────────────────
+
+pre:has(> code.mermaid) {
+  background: transparent;
+  border: none;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+// ─── Portfolio Folder Page — Card Grid ───────────────────────────
+// Applies to the /portfolio listing page
+
+body[data-slug*="portfolio"] .page {
+  .section-li {
+    border: 1px solid var(--lightgray);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    background: var(--light);
+
+    &:hover {
+      border-color: var(--secondary);
+      box-shadow: 0 4px 20px var(--highlight);
+      transform: translateY(-2px);
+    }
+
+    .section > a {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .section-description {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--darkgray);
+      opacity: 0.8;
+    }
+
+    .tags {
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+// ─── Smooth Transitions ──────────────────────────────────────────
+
+.navigation-progress {
+  height: 2px;
+  background: linear-gradient(90deg, var(--secondary), var(--tertiary));
+}
+
+// ─── Dark Mode Refinements ───────────────────────────────────────
+
+:root[saved-theme="dark"] {
+  .graph > .global-graph-outer {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  article blockquote {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+// ─── Responsive ──────────────────────────────────────────────────
+
+@media all and ($mobile) {
+  .article-title {
+    font-size: 1.6rem;
+  }
+
+  article {
+    p {
+      font-size: 1rem;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+    }
+  }
+}

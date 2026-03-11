@@ -7,17 +7,21 @@ ul.section-ul {
 }
 
 li.section-li {
-  margin-bottom: 0;
-  padding: 1rem 0.5rem;
-  border-bottom: 1px solid rgba(150, 150, 150, 0.15);
+  margin-bottom: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   @media (min-width: 600px) {
-    padding: 1.5rem 0.75rem;
+    padding: 1.5rem 1.75rem;
   }
 
-  &:last-child {
-    border-bottom: none;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   }
 
   & > .section {
@@ -32,6 +36,7 @@ li.section-li {
 
         & > a {
           background-color: transparent;
+          transition: color 0.2s ease;
 
           &::before {
             content: "";

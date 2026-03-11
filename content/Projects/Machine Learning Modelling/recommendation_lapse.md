@@ -28,7 +28,7 @@ draft: false
 
 ## Context
 
-This post is a companion to the [[portfolio/sales-pom-product-recommendation/index|existing-customer product recommendation model]]. Both use the same architecture — persona-based clustering, two-stage ML/Rule hybrid scoring, smoothed lift calibration — but target fundamentally different populations. The existing-customer model targets active policyholders ($\geq 1$ active contract). This model targets **lapsed customers**: those with zero active contracts who have lapsed or terminated their policies.
+This post is a companion to the [[Projects/Machine Learning Modelling/persona_based_recommendation|existing-customer product recommendation model]]. Both use the same architecture — persona-based clustering, two-stage ML/Rule hybrid scoring, smoothed lift calibration — but target fundamentally different populations. The existing-customer model targets active policyholders ($\geq 1$ active contract). This model targets **lapsed customers**: those with zero active contracts who have lapsed or terminated their policies.
 
 The distinction is material. These customers have no current portfolio to cross-sell against. Their value distribution skews heavily toward the lowest tier. And the population is roughly an order of magnitude smaller.
 

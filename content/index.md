@@ -1,5 +1,5 @@
 ---
-title: Jay Park — AI & ML Engineering
+title: AI & ML Engineering
 enableToc: false
 ---
 

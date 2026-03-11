@@ -29,7 +29,7 @@ An insurance company runs monthly outbound call campaigns targeting existing pol
 
 The target variable is binary: whether a customer has a meaningful phone conversation (exceeding a duration threshold) during a given campaign month.
 
-This model serves the same outbound campaign infrastructure as the [[portfolio/reinstatement-model-imbalanced-classification/index|reinstatement prediction model]], but targets a different outcome: reachability rather than conversion.
+This model serves the same outbound campaign infrastructure as the [[Projects/Machine Learning Modelling/reinstatement_model|reinstatement prediction model]], but targets a different outcome: reachability rather than conversion.
 
 ## Feature Engineering
 
@@ -161,7 +161,7 @@ The original design considered partitioned segmentation — training separate mo
 
 **Empirical superiority.** The ensemble's discrimination metrics consistently exceeded those of any individual segment-specific model. Segment variables (time-of-day, occupation tier, value class) proved more informative as *features within a unified model* than as *partitioning criteria for separate models*.
 
-The same single-model-over-segmentation argument applies to the [[portfolio/billing-model-causal-inference-ml-or/index|billing collection model]], which uses the identical two-stage architecture on payment success prediction.
+The same single-model-over-segmentation argument applies to the [[Projects/Machine Learning Modelling/billing_collection|billing collection model]], which uses the identical two-stage architecture on payment success prediction.
 
 ## Validation
 

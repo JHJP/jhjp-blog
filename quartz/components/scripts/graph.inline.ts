@@ -209,7 +209,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     const numLinks = graphData.links.filter(
       (l) => l.source.id === d.id || l.target.id === d.id,
     ).length
-    return 2 + Math.sqrt(numLinks)
+    return 4 + Math.sqrt(numLinks)
   }
 
   let hoveredNodeId: string | null = null
@@ -254,7 +254,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     const tweenGroup = new TweenGroup()
 
     for (const l of linkRenderData) {
-      let alpha = 1
+      let alpha = 0.15
 
       // if we are hovering over a node, we want to highlight the immediate neighbours
       // with full alpha and the rest with default alpha
@@ -318,14 +318,28 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
 
   function renderNodes() {
     tweens.get("hover")?.stop()
-
     const tweenGroup = new TweenGroup()
+
     for (const n of nodeRenderData) {
       let alpha = 1
-
-      // if we are hovering over a node, we want to highlight the immediate neighbours
       if (hoveredNodeId !== null && focusOnHover) {
         alpha = n.active ? 1 : 0.2
+      }
+
+      // Clear and redraw with optional glow
+      const r = nodeRadius(n.simulationData)
+      n.gfx.clear()
+
+      if (hoveredNodeId === n.simulationData.id) {
+        // Glow: larger semi-transparent brand-colored circle behind node
+        n.gfx.circle(0, 0, r * 3).fill({ color: computedStyleMap["--secondary"], alpha: 0.15 })
+      }
+
+      // Redraw main node
+      const isTagNode = n.simulationData.id.startsWith("tags/")
+      n.gfx.circle(0, 0, r).fill({ color: isTagNode ? computedStyleMap["--light"] : n.color })
+      if (isTagNode) {
+        n.gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"] })
       }
 
       tweenGroup.add(new Tweened<Graphics>(n.gfx, tweenGroup).to({ alpha }, 200))
@@ -442,7 +456,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       simulationData: l,
       gfx,
       color: computedStyleMap["--lightgray"],
-      alpha: 1,
+      alpha: 0.15,
       active: false,
     }
 

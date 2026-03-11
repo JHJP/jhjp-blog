@@ -104,9 +104,12 @@ article {
   // Table polish
   .table-container > table {
     width: 100%;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     font-size: 0.92rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--lightgray);
 
     th {
       background: var(--highlight);
@@ -114,17 +117,29 @@ article {
       text-transform: uppercase;
       font-size: 0.78rem;
       letter-spacing: 0.04em;
-      padding: 0.6rem 0.8rem;
+      padding: 0.75rem 1rem;
+      color: var(--gray);
+      text-align: left;
+      border-bottom: 1px solid var(--lightgray);
     }
 
     td {
-      padding: 0.5rem 0.8rem;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--lightgray);
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: var(--highlight);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
     }
 
     tr {
       transition: background-color 0.15s ease;
       &:hover {
-        background-color: var(--highlight);
+        background-color: rgba(79, 70, 229, 0.04);
       }
     }
   }
@@ -170,23 +185,15 @@ a.internal.tag-link {
 
 // ─── Tactile Hover States ────────────────────────────────────────
 
-.section-li {
-  border-radius: 6px;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: var(--highlight);
-  }
+.section-li:hover .section .desc h3 a.internal {
+  color: var(--secondary);
 }
 
 .section .desc h3 a.internal {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--dark);
-
-  &:hover {
-    color: var(--secondary);
-  }
+  transition: color 0.2s ease;
 }
 
 // ─── Page Title (Left Sidebar) ───────────────────────────────────
@@ -364,42 +371,6 @@ pre:has(> code.mermaid) {
   margin: 2rem 0;
 }
 
-// ─── Portfolio Folder Page — Card Grid ───────────────────────────
-// Applies to the /portfolio listing page
-
-body[data-slug*="portfolio"] .page {
-  .section-li {
-    border: 1px solid var(--lightgray);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-    transition: all 0.2s ease;
-    background: var(--light);
-
-    &:hover {
-      border-color: var(--secondary);
-      box-shadow: 0 4px 20px var(--highlight);
-      transform: translateY(-2px);
-    }
-
-    .section > a {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .section-description {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      color: var(--darkgray);
-      opacity: 0.8;
-    }
-
-    .tags {
-      margin-top: 0.5rem;
-    }
-  }
-}
-
 // ─── Smooth Transitions ──────────────────────────────────────────
 
 .navigation-progress {
@@ -416,6 +387,16 @@ body[data-slug*="portfolio"] .page {
 
   article blockquote {
     background: rgba(255, 255, 255, 0.03);
+  }
+
+  li.section-li,
+  .recent-notes .recent-ul > li {
+    background: var(--lightgray);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
   }
 }
 

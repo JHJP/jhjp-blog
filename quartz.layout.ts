@@ -54,7 +54,10 @@ export const defaultContentPageLayout: PageLayout = {
   right: [
     Component.ConditionalRender({
       component: Component.Graph(),
-      condition: (page) => page.fileData.slug !== "index",
+      condition: (page) => {
+        const slug = page.fileData.slug ?? ""
+        return slug !== "index" && !slug.endsWith("/index")
+      },
     }),
     Component.DesktopOnly(Component.TableOfContents()),
     Component.Backlinks(),
@@ -78,5 +81,13 @@ export const defaultListPageLayout: PageLayout = {
     }),
     Component.Explorer(),
   ],
-  right: [Component.Graph()],
+  right: [
+    Component.ConditionalRender({
+      component: Component.Graph(),
+      condition: (page) => {
+        const slug = page.fileData.slug ?? ""
+        return !slug.endsWith("/index") && !slug.startsWith("tags/")
+      },
+    }),
+  ],
 }

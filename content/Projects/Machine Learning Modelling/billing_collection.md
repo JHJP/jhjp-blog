@@ -64,7 +64,7 @@ $$
 
 This scales each observation's contribution to the loss gradient by the inverse frequency of its class. The weighting is computed dynamically per training period and applied to both the logistic regression base and the XGBoost residual model. By operating on the loss function rather than the data, cost-sensitive weighting preserves the original feature distribution and produces better-calibrated probability estimates than synthetic oversampling.
 
-The [[portfolio/reinstatement-model-imbalanced-classification/index|reinstatement prediction model]] applies this same cost-sensitive weighting under far more severe imbalance, with a formal comparison of OLS, Ridge, and Lasso regularization strategies.
+The [[Projects/Machine Learning Modelling/reinstatement_model|reinstatement prediction model]] applies this same cost-sensitive weighting under far more severe imbalance, with a formal comparison of OLS, Ridge, and Lasso regularization strategies.
 
 ### Objective Function — Stage 1: Logistic Regression (Base Model)
 
@@ -104,7 +104,7 @@ The billing model uses the full policy population rather than training separate 
 2. **Complementary learning.** The logistic regression captures linear effects (premium magnitude, tenure, seasonality). The GBT corrects for non-linear interactions in the residual space — interactions that segment boundaries would either miss or arbitrarily partition.
 3. **Empirical performance.** The unified ensemble's discrimination metrics exceeded those of segment-specific models.
 
-This architecture — and the rationale for a unified model over segmented alternatives — is shared with the [[portfolio/contact-model-two-stage-residual-learning/index|outbound contact prediction model]], which applies the same two-stage residual approach to a different business target.
+This architecture — and the rationale for a unified model over segmented alternatives — is shared with the [[Projects/Machine Learning Modelling/contact_model|outbound contact prediction model]], which applies the same two-stage residual approach to a different business target.
 
 ### Feature Engineering
 

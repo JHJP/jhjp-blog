@@ -210,7 +210,7 @@ Three business filters applied before final ranking:
 
 After filtering, products are ranked by lift score and the top 3 selected.
 
-Customers excluded by the churn filter may instead be routed to the [[sales-ab-lapsed-customer-reactivation|lapsed customer reactivation model]], which adapts the same persona-based architecture for the zero-active-contract population.
+Customers excluded by the churn filter may instead be routed to the [[portfolio/sales-ab-lapsed-customer-reactivation/index|lapsed customer reactivation model]], which adapts the same persona-based architecture for the zero-active-contract population.
 
 ## Validation
 

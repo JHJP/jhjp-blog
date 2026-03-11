@@ -20,7 +20,7 @@ When an insurance policy lapses due to missed premiums, the customer has a limit
 
 The task: predict which recently lapsed customers will reinstate within a limited window from the campaign reference date. The constraint: severe class imbalance and a target population restricted to customers who lapsed within a recent lookback period.
 
-Customers who do not reinstate within this window may later enter the [[sales-ab-lapsed-customer-reactivation|lapsed customer reactivation pipeline]], which uses a persona-based recommendation system to re-engage them with new product offers.
+Customers who do not reinstate within this window may later enter the [[portfolio/sales-ab-lapsed-customer-reactivation/index|lapsed customer reactivation pipeline]], which uses a persona-based recommendation system to re-engage them with new product offers.
 
 ## Feature Engineering
 
@@ -165,7 +165,7 @@ $$
 \hat{y}_{\text{final},i} = \text{clip}\!\Big(\hat{p}_{\text{base},i} + f_{\text{XGB}}(\mathbf{x}_i; \hat{\mathbf{\Theta}}),\; 0,\; 1\Big)
 $$
 
-This two-stage residual architecture is the same framework used in the [[contact-model-two-stage-residual-learning|outbound contact prediction model]], where the logistic regression captures population-level linear effects and the gradient-boosted residual stage corrects for non-linear interactions.
+This two-stage residual architecture is the same framework used in the [[portfolio/contact-model-two-stage-residual-learning/index|outbound contact prediction model]], where the logistic regression captures population-level linear effects and the gradient-boosted residual stage corrects for non-linear interactions.
 
 ## Validation
 

@@ -11,16 +11,19 @@ li.section-li {
 
   & > .section {
     display: grid;
-    grid-template-columns: fit-content(8em) 3fr 1fr;
-
-    @media all and ($mobile) {
-      & > .tags {
-        display: none;
-      }
-    }
+    grid-template-columns: fit-content(8em) 1fr;
 
     & > .desc > h3 > a {
       background-color: transparent;
+    }
+
+    & > .desc > .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.4rem 0 0 0;
+      padding: 0;
+      list-style: none;
     }
 
     & .meta {
@@ -34,7 +37,7 @@ li.section-li {
 .popover .section {
   grid-template-columns: fit-content(8em) 1fr !important;
 
-  & > .tags {
+  & > .desc > .tags {
     display: none;
   }
 }

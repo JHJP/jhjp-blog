@@ -18,13 +18,13 @@ draft: false
 
 An insurance company runs monthly outbound sales campaigns targeting existing policyholders. Agents call customers and recommend products — but which products? Random assignment risks pitching a product the customer already holds, or coverage they purchased last month.
 
-The task: for each customer in a population of hundreds of thousands, rank 20+ product groups and recommend the top 3 most likely to convert. The constraint: most product groups have fewer than 1,000 positive samples across the training window. A binary classifier cannot learn meaningful patterns from a handful of positive examples.
+The task: for each customer in a population of hundreds of thousands, rank multiple product groups and recommend the top 3 most likely to convert. The constraint: most product groups have insufficient positive samples for discriminative modeling across the training window. A binary classifier cannot learn meaningful patterns from a handful of positive examples.
 
 ## Hybrid Architecture
 
 ```mermaid
 flowchart TD
-    DATA["Training Data<br/>(20+ product targets)"] --> SPLIT{"n₊ ≥ 1,000?"}
+    DATA["Training Data<br/>(multiple product targets)"] --> SPLIT{"Sufficient n₊?"}
 
     SPLIT -->|Yes| ML["ML Track"]
     SPLIT -->|No| RULE["Rule Track"]
@@ -32,7 +32,7 @@ flowchart TD
     subgraph ML_SUB["ML Track (per product)"]
         direction LR
         LR_M["LR Base<br/>(class-weighted)"] --> RES_M["Residual<br/>r = y − p̂"]
-        RES_M --> XGB_M["XGBoost<br/>(depth=4)"]
+        RES_M --> XGB_M["XGBoost<br/>(shallow)"]
         LR_M --> COMB_M["p̂_final = clip(p̂_LR + f_XGB)"]
         XGB_M --> COMB_M
     end
@@ -58,8 +58,8 @@ flowchart TD
 
 The solution partitions product groups into two tracks based on training-set positive sample count:
 
-- **ML track** (products with $n_+ \geq 1{,}000$): two-stage logistic regression + XGBoost ensemble, trained per product in a one-vs-rest configuration
-- **Rule track** (products with $n_+ < 1{,}000$): persona-based conversion rate lookup tables
+- **ML track** (products with sufficient positive samples): two-stage logistic regression + XGBoost ensemble, trained per product in a one-vs-rest configuration
+- **Rule track** (products with insufficient positive samples): persona-based conversion rate lookup tables
 
 Both tracks produce scores on different scales — ML outputs probabilities $\in [0, 1]$, rules output historical conversion rates. A smoothed lift calibration normalizes them for cross-product ranking.
 
@@ -69,7 +69,7 @@ Before modeling, customers are clustered into interpretable personas using a fou
 
 ### K-Means Clustering
 
-50+ input features across four categories are standardized and clustered via K-Means:
+Dozens of input features across four categories are standardized and clustered via K-Means:
 
 - **Demographics** — gender, regional economic tier (a multi-level classification based on regional economic indicators), occupation groups, occupational risk grades
 - **Life stage** — age-based cohort indicators
@@ -86,12 +86,12 @@ A shallow decision tree trained to predict cluster assignments serves as an inte
 
 Each customer receives a four-character code encoding:
 
-| Dimension | Description | Cardinality |
-|-----------|-------------|:-----------:|
-| **Occupation** | Hierarchical occupation classification | 9 |
-| **Life Stage** | Age-based cohort | 5 |
-| **Geography** | Economic-tier regional classification | 5 |
-| **Value** | Multi-factor loyalty score | 3 |
+| Dimension | Description |
+|-----------|-------------|
+| **Occupation** | Hierarchical occupation classification |
+| **Life Stage** | Age-based cohort |
+| **Geography** | Economic-tier regional classification |
+| **Value** | Multi-factor loyalty score |
 
 The **value dimension** uses a 6-factor scoring system:
 
@@ -101,7 +101,7 @@ $$
 
 where the six factors span contract depth, product diversity, tenure, and premium indicators. The thresholds $\tau_k$ are set at population percentiles. Customers meeting $\geq 4$ conditions are classified as High, 2–3 as Medium, and $< 2$ (with additional contract count thresholds) as Low.
 
-This produces 600+ unique persona codes. For each persona-product combination, the historical conversion rate on the training set provides the rule-track score.
+This produces hundreds of unique persona codes. For each persona-product combination, the historical conversion rate on the training set provides the rule-track score.
 
 > [!info] Interactive Element
 > This section contained an interactive visualization in the original post.
@@ -111,7 +111,7 @@ This produces 600+ unique persona codes. For each persona-product combination, t
 
 ## Feature Engineering
 
-100+ engineered features derived from a 1,000+ line Spark SQL pipeline joining 8+ source tables. All features use a one-month lag relative to the campaign month.
+Over a hundred engineered features derived from a large Spark SQL pipeline joining multiple source tables. All features use a one-month lag relative to the campaign month.
 
 Key feature groups:
 
@@ -124,7 +124,7 @@ Key feature groups:
 ### Preprocessing Pipeline
 
 1. **Column deletion** — campaign metadata, sales leakage columns (purchase counts and amounts from the prediction window), constant-value and near-zero-variance features ($\geq 99\%$ zero prevalence)
-2. **Time-based split** — test: most recent campaign month; train/validation: prior months, split 80/20 with fixed seed
+2. **Time-based split** — test: most recent campaign month; train/validation: prior months, further sub-split for validation with fixed seed
 3. **Log-transformation** — all premium and amount features via $\log(1 + x)$
 4. **Percentile clipping** — count features capped at 99th percentile
 5. **Recency processing** — sentinel values ("never purchased") split into binary `never_purchased` flags plus a capped 120-month recency value
@@ -156,7 +156,7 @@ $$
 \mathcal{L}_{\text{base}}(\mathbf{w}, b) = -\frac{1}{N}\sum_{i=1}^{N} w_i \Big[ y_i \log \hat{p}_i + (1 - y_i) \log(1 - \hat{p}_i) \Big] + \lambda \|\mathbf{w}\|_2^2
 $$
 
-Ridge regularization ($\lambda = 0.01$). Class weights: $w_+ = n_- / n_+$.
+Ridge regularization. Class weights: $w_+ = n_- / n_+$.
 
 ### Stage 2: XGBoost Residual Correction
 
@@ -168,7 +168,7 @@ $$
 \hat{p}_{\text{final}} = \text{clip}\!\Big(\hat{p}_{\text{LR}} + f_{\text{XGB}}(\mathbf{x};\, r),\; 0,\; 1\Big)
 $$
 
-Hyperparameters: `max_depth=4`, `n_estimators=100`, `learning_rate=0.1`, `subsample=0.8`, `colsample_bytree=0.8`, $\ell_1 = 0.1$, $\ell_2 = 1.0$.
+Standard moderate hyperparameters (shallow trees, conservative learning rate, column/row subsampling, combined $\ell_1 + \ell_2$ regularization).
 
 ## Rule-Based Track
 
@@ -204,9 +204,9 @@ where $\alpha = 0.01$ prevents instability when $\bar{y}_k$ is small.
 
 Three business filters applied before final ranking:
 
-1. **Recent churn filter** — customers who lapsed within the last 3 months receive all scores zeroed
-2. **Product overlap penalty** — customers with existing coverage in a product category receive a discount multiplier (0.7) on that category's scores
-3. **Recent purchase filter** — products purchased within the last 2 months are zeroed
+1. **Recent churn filter** — customers who lapsed within a recent window receive all scores zeroed
+2. **Product overlap penalty** — customers with existing coverage in a product category receive a discount multiplier on that category's scores
+3. **Recent purchase filter** — products purchased within a recent holding period are zeroed
 
 After filtering, products are ranked by lift score and the top 3 selected.
 
@@ -230,7 +230,7 @@ Gemini helped design the value dimension scoring — specifically the 6-conditio
 | Layer | Technology |
 |-------|-----------|
 | Data Platform | Databricks, Delta Lake |
-| Feature Engineering | Spark SQL (100+ features, 8+ source tables) |
+| Feature Engineering | Spark SQL (over a hundred features, multiple source tables) |
 | Clustering | K-Means + Decision Tree Surrogate |
 | ML Models | PySpark MLlib LR + SparkXGBRegressor (per-product OvR) |
 | Rule Models | Persona-code conversion rate lookup (Spark-native) |

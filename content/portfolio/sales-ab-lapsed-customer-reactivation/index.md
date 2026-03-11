@@ -26,7 +26,7 @@ The distinction is material. These customers have no current portfolio to cross-
 
 ### Collapse of the ML Track
 
-The active-customer model trains two-stage ML ensembles for multiple product groups exceeding the 1,000-positive-sample threshold. The lapsed-customer model has sufficient positive samples for only **one** product category. All remaining product groups fall to the rule-based track — persona-code conversion rate lookups.
+The active-customer model trains two-stage ML ensembles for multiple product groups exceeding the positive-sample threshold. The lapsed-customer model has sufficient positive samples for only **one** product category. All remaining product groups fall to the rule-based track — persona-code conversion rate lookups.
 
 This inversion makes persona quality the dominant factor in model performance. The majority of the system's discrimination comes from how well the four-dimensional persona codes capture product affinity.
 
@@ -47,7 +47,7 @@ The distribution shifts accordingly: the highest value tier shrinks dramatically
 
 ### Adapted Clustering
 
-K-Means is re-fitted on the lapsed population ($K = 12$). The cluster profiles differ structurally from the active-customer model. The dominant persona codes have elevated rates of unknown occupation classification ($\sim 33\%$ in the occupation dimension), reflecting incomplete data on customers who have been out of the active system.
+K-Means is re-fitted on the lapsed population ($K$ selected via silhouette analysis). The cluster profiles differ structurally from the active-customer model. The dominant persona codes have elevated rates of unknown occupation classification (a substantial share in the occupation dimension), reflecting incomplete data on customers who have been out of the active system.
 
 ## Feature Engineering
 
@@ -72,7 +72,7 @@ $$
 \hat{p}_{\text{final}} = \text{clip}\!\Big(\hat{p}_{\text{LR}} + f_{\text{XGB}}(\mathbf{x};\, y - \hat{p}_{\text{LR}}),\; 0,\; 1\Big)
 $$
 
-Same architecture as the active-customer model: logistic regression base ($\ell_2$ regularization, $\lambda = 0.01$, class-weighted) plus XGBoost residual correction (`max_depth=4`, 100 estimators).
+Same architecture as the active-customer model: logistic regression base ($\ell_2$ regularization, class-weighted) plus XGBoost residual correction (shallow trees, conservative learning rate).
 
 This single ML model achieved notably higher discrimination than any individual product model in the active-customer system — with minimal train-to-test degradation. The signal is strong and clean: customers who lapsed but still require this particular coverage form a distinct, identifiable subpopulation.
 
@@ -86,9 +86,9 @@ The limitation surfaces in calibration. With only persona-level conversion rates
 
 Same three business rules:
 
-1. **Recent churn filter** — lapse within 3 months $\to$ all scores zeroed
+1. **Recent churn filter** — lapse within a recent window $\to$ all scores zeroed
 2. **Product overlap penalty** — existing coverage $\to$ discount multiplier
-3. **Recent purchase filter** — products purchased within 2 months $\to$ zeroed
+3. **Recent purchase filter** — products purchased within a recent holding period $\to$ zeroed
 
 Smoothed lift calibration:
 
@@ -130,7 +130,7 @@ Building the same architecture for two populations exposes where persona-based r
 
 **Weaker performance setting.** When the population is diverse and purchases spread across many products. The active-customer model's product distribution is flatter, and the rule track cannot differentiate within persona codes for low-frequency products.
 
-**Architectural implication.** The ML/Rule split threshold ($n_+ \geq 1{,}000$) should arguably be population-dependent. For a smaller population, 1,000 represents a meaningful fraction of the data — a reasonable threshold. For a larger population, 1,000 is a tiny fraction, potentially leaving products with hundreds of positives on the rule track that might benefit from discriminative modeling (perhaps with stronger regularization or a simpler model family than the full two-stage ensemble).
+**Architectural implication.** The ML/Rule split threshold should arguably be population-dependent. For a smaller population, the threshold represents a meaningful fraction of the data. For a larger population, the same threshold is a tiny fraction, potentially leaving products with many positives on the rule track that might benefit from discriminative modeling (perhaps with stronger regularization or a simpler model family than the full two-stage ensemble).
 
 ## Technical Stack
 
@@ -138,7 +138,7 @@ Building the same architecture for two populations exposes where persona-based r
 |-------|-----------|
 | Data Platform | Databricks, Delta Lake |
 | Feature Engineering | Spark SQL (shared schema with active-customer model) |
-| Clustering | K-Means ($K = 12$) + Decision Tree Surrogate |
+| Clustering | K-Means + Decision Tree Surrogate |
 | ML Model | PySpark MLlib LR + SparkXGBRegressor (single product) |
 | Rule Models | Persona-code conversion rate lookup (Spark-native) |
 | Calibration | Smoothed Lift ($\alpha = 0.01$) |

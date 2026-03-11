@@ -18,13 +18,13 @@ draft: false
 
 When an insurance policy lapses due to missed premiums, the customer has a limited window to reinstate it. The business runs monthly outbound campaigns targeting recently lapsed customers, but the reinstatement rate is very low — the vast majority of outreach is directed at customers who will not return.
 
-The task: predict which recently lapsed customers will reinstate within a 45-day window from the campaign reference date. The constraint: severe class imbalance and a target population restricted to customers who lapsed within the preceding 90 days.
+The task: predict which recently lapsed customers will reinstate within a limited window from the campaign reference date. The constraint: severe class imbalance and a target population restricted to customers who lapsed within a recent lookback period.
 
 Customers who do not reinstate within this window may later enter the [[sales-ab-lapsed-customer-reactivation|lapsed customer reactivation pipeline]], which uses a persona-based recommendation system to re-engage them with new product offers.
 
 ## Feature Engineering
 
-40+ features derived from contract records, customer profiles, payment history, loan utilization, and reinstatement records. The engineering involved multiple PySpark scripts joining 5+ source tables, each with strict temporal boundaries.
+Dozens of features derived from contract records, customer profiles, payment history, loan utilization, and reinstatement records. The engineering involved multiple PySpark scripts joining multiple source tables, each with strict temporal boundaries.
 
 ### Time-Travel Consistency
 
@@ -38,13 +38,13 @@ Several features from the reinstatement table were removed during development be
 
 **Customer Financial Profile** — active and total policy counts (99th-percentile clipped), monthly premium aggregates, a composite customer lifetime value score. The value score is quantile-binned into tiers, with a binary presence flag for the $> 95\%$ of observations where the raw score is zero.
 
-**Lapse Characteristics** — days elapsed since lapse (robust-scaled via $(x - \tilde{x}) / \text{IQR}$, filtered to $\leq 90$ days), lapse timing features (month, day-of-week)
+**Lapse Characteristics** — days elapsed since lapse (robust-scaled via $(x - \tilde{x}) / \text{IQR}$, filtered to within the lookback window), lapse timing features (month, day-of-week)
 
 **Loan and Payment Behavior** — loan utilization counts, cumulative loan amounts, payment method transition frequency, policy loan indicators. The automatic premium loan flag is a proxy for cash flow stress: the insurer draws against the policy's cash surrender value to cover premiums, indicating the customer cannot pay out-of-pocket.
 
-**Reinstatement History** — prior reinstatement counts (computed only from events before the reference date). This feature dominates in importance ($\sim 46\%$ in a random forest diagnostic check), but it is legitimate: customers who have reinstated before are behaviorally distinct from first-time lapsers.
+**Reinstatement History** — prior reinstatement counts (computed only from events before the reference date). This feature dominates in importance (dominant in a random forest diagnostic check), but it is legitimate: customers who have reinstated before are behaviorally distinct from first-time lapsers.
 
-**Demographic and Channel** — occupational classification (target-encoded with Bayesian smoothing, $\alpha = 20$, for 800+ categories), distribution channel (target-encoded, $\alpha = 10$), gender (one-hot), age (with validity flag for zero-value detection and median imputation)
+**Demographic and Channel** — occupational classification (target-encoded with Bayesian smoothing, $\alpha = 20$, for high-cardinality categories), distribution channel (target-encoded, $\alpha = 10$), gender (one-hot), age (with validity flag for zero-value detection and median imputation)
 
 > **Margin note:**
 > Bayesian smoothing is equivalent to a Beta prior on the category-level mean. The smoothing parameter $\alpha$ controls the prior strength: larger $\alpha$ pulls rare categories more aggressively toward the global mean.
@@ -76,7 +76,7 @@ $$
 \hat{\boldsymbol{\beta}}_{\text{OLS}} = \arg\min_{\boldsymbol{\beta}} \sum_{i=1}^{N} (y_i - \mathbf{x}_i^\top \boldsymbol{\beta})^2
 $$
 
-OLS is unbiased under standard Gauss-Markov assumptions but suffers from high variance when features are correlated or when the feature dimension $p$ approaches the sample size $N$. In insurance feature sets with 40+ correlated features — multiple premium aggregates, overlapping tenure metrics, collinear coverage amounts — OLS coefficient estimates become unstable. Small perturbations in the data produce large swings in the coefficient vector.
+OLS is unbiased under standard Gauss-Markov assumptions but suffers from high variance when features are correlated or when the feature dimension $p$ approaches the sample size $N$. In insurance feature sets with dozens of correlated features — multiple premium aggregates, overlapping tenure metrics, collinear coverage amounts — OLS coefficient estimates become unstable. Small perturbations in the data produce large swings in the coefficient vector.
 
 ### Ridge Regression ($\ell_2$ Penalty)
 
@@ -120,7 +120,7 @@ The geometric difference between $\ell_1$ and $\ell_2$ penalties explains their 
 
 ### The Choice for This Model
 
-The reinstatement model's base logistic regression uses **pure Ridge** ($\alpha = 0$) with $\lambda = 0.01$. This reflects the feature structure: most features carry some predictive signal (so Lasso's variable elimination is undesirable), but multicollinearity among premium, tenure, and coverage features requires shrinkage for stable coefficient estimation. Ridge's distributed weight allocation across correlated features produces more interpretable and stable coefficients than Lasso's arbitrary selection.
+The reinstatement model's base logistic regression uses **pure Ridge** ($\alpha = 0$) with a moderate regularization strength. This reflects the feature structure: most features carry some predictive signal (so Lasso's variable elimination is undesirable), but multicollinearity among premium, tenure, and coverage features requires shrinkage for stable coefficient estimation. Ridge's distributed weight allocation across correlated features produces more interpretable and stable coefficients than Lasso's arbitrary selection.
 
 ## Handling Class Imbalance
 
@@ -143,7 +143,7 @@ $$
 \mathcal{L}_{\text{base}}(\mathbf{w}, b) = -\frac{1}{N}\sum_{i=1}^{N} w_i \Big[ y_i \log \hat{p}_i + (1 - y_i) \log(1 - \hat{p}_i) \Big] + \lambda \|\mathbf{w}\|_2^2
 $$
 
-where $\hat{p}_i = \sigma(\mathbf{w}^\top \mathbf{x}_i + b)$, with Ridge regularization ($\lambda = 0.01$) and cost-sensitive weights $w_i$.
+where $\hat{p}_i = \sigma(\mathbf{w}^\top \mathbf{x}_i + b)$, with Ridge regularization and cost-sensitive weights $w_i$.
 
 Pipeline: `StringIndexer` $\to$ `OneHotEncoder` $\to$ `VectorAssembler` $\to$ `StandardScaler` $\to$ `LogisticRegression`.
 
@@ -157,7 +157,7 @@ $$
 \mathcal{L}_{\text{residual}}(\mathbf{\Theta}) = \frac{1}{N}\sum_{i=1}^{N} \Big(r_i - f_{\text{XGB}}(\mathbf{x}_i; \mathbf{\Theta})\Big)^2 + \alpha \sum_k |w_k| + \frac{1}{2}\lambda \sum_k w_k^2
 $$
 
-XGBoost hyperparameters: `max_depth=4`, `n_estimators=100`, `learning_rate=0.1`, `subsample=0.8`, `colsample_bytree=0.8`, $\alpha = 0.1$ ($\ell_1$), $\lambda = 1.0$ ($\ell_2$). All fixed upfront — no grid search on the residual model.
+Standard moderate hyperparameters (shallow trees, conservative learning rate, column/row subsampling, combined $\ell_1 + \ell_2$ regularization). All fixed upfront — no grid search on the residual model.
 
 ### Ensemble Combination
 
@@ -169,17 +169,17 @@ This two-stage residual architecture is the same framework used in the [[contact
 
 ## Validation
 
-Time-based OOS split with a **1-month maturity gap** between training and test to allow the 45-day target window to resolve fully. Training spans 12 months; testing uses one holdout month.
+Time-based OOS split with a **maturity gap** between training and test to allow the target window to resolve fully. Training spans multiple months; testing uses one holdout month.
 
-An explicit 80/20 sub-split within the training set monitors overfitting. AUC gaps exceeding 0.05 between sub-train and validation trigger warnings.
+A further sub-split within the training set monitors overfitting. AUC gaps exceeding 0.05 between sub-train and validation trigger warnings.
 
 ### Data Leakage Detection
 
-A lightweight random forest is fitted on a 20% sample as a diagnostic. Any single feature with importance $> 50\%$ triggers a leakage alert; $> 30\%$ triggers a caution flag. The reinstatement history feature dominates at $\sim 46\%$ — flagged for review but confirmed as a legitimate behavioral signal.
+A lightweight random forest is fitted on a 20% sample as a diagnostic. Any single feature with importance $> 50\%$ triggers a leakage alert; $> 30\%$ triggers a caution flag. The reinstatement history feature dominates — flagged for review but confirmed as a legitimate behavioral signal.
 
 ### Decile Performance
 
-Top-decile reinstatement rates substantially exceeded the population average. The top 40% of the ranked list captured the majority of actual reinstatements. Discrimination was sharp across deciles, with bottom-half deciles contributing few reinstatements.
+Top-decile reinstatement rates substantially exceeded the population average. The top fraction of the ranked list captured the majority of actual reinstatements. Discrimination was sharp across deciles, with bottom-half deciles contributing few reinstatements.
 
 ### Priority Score
 
@@ -219,9 +219,9 @@ Gemini helped design the value scoring scheme and the priority score formulation
 | Layer | Technology |
 |-------|-----------|
 | Data Platform | Databricks, Delta Lake |
-| Feature Engineering | PySpark (40+ features, 5+ source tables, target encoding) |
+| Feature Engineering | PySpark (dozens of features, multiple source tables, target encoding) |
 | Model | Logistic Regression + XGBoost (Two-Stage Residual, cost-sensitive) |
 | Regularization | Ridge ($\ell_2$) for base model; $\ell_1 + \ell_2$ for residual model |
 | Imbalance Handling | Class-proportional instance weighting |
-| Validation | Time-based holdout with 1-month maturity gap, leakage detection |
+| Validation | Time-based holdout with maturity gap, leakage detection |
 | AI Workflow | Gemini (value scoring design) + Claude Code (4 FE scripts + training pipeline) |

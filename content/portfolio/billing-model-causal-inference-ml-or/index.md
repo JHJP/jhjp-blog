@@ -25,7 +25,7 @@ This project ran on Databricks (Spark SQL + PySpark). Development followed a two
 
 **Phase 1 — Architecture Design with Gemini.** The core technical debate concerned endogeneity: billing day assignment is non-random — it correlates with customer characteristics that also affect payment success. A naive regression comparing success rates across billing days confuses correlation with causation. Through iterative discussion, I converged on EconML's LinearDML framework for causal estimation and a two-stage residual ensemble for prediction.
 
-**Phase 2 — Code Generation with Claude Code.** Each model component had a dedicated `.md` prompt file specifying the exact feature engineering logic, data leakage boundaries, and output schema. Claude Code read these specifications alongside the table metadata and generated the PySpark/SQL pipelines — feature engineering scripts exceeding 1,000 lines, training pipelines with time-based out-of-sample validation, and causal inference workflows with dynamic treatment processing. The specification-driven approach ensured that generated code matched the mathematical blueprint precisely.
+**Phase 2 — Code Generation with Claude Code.** Each model component had a dedicated `.md` prompt file specifying the exact feature engineering logic, data leakage boundaries, and output schema. Claude Code read these specifications alongside the table metadata and generated the PySpark/SQL pipelines — large-scale feature engineering scripts, training pipelines with time-based out-of-sample validation, and causal inference workflows with dynamic treatment processing. The specification-driven approach ensured that generated code matched the mathematical blueprint precisely.
 
 ## Predictive Model: Two-Stage Residual Learning
 
@@ -62,7 +62,7 @@ $$
 \mathcal{L}_{\text{base}}(\mathbf{w}, b) = -\frac{1}{N}\sum_{i=1}^{N} w_i \Big[ y_i \log \hat{p}_i + (1 - y_i) \log(1 - \hat{p}_i) \Big] + \lambda \Big[\alpha \|\mathbf{w}\|_1 + (1 - \alpha) \|\mathbf{w}\|_2^2 \Big]
 $$
 
-where $\hat{p}_i = \sigma(\mathbf{w}^\top \mathbf{x}_i + b)$, $w_i$ is the class weight ($w_+ = n_- / n_+$ for positive instances), and $(\lambda, \alpha)$ are selected via grid search over $\lambda \in \{0.001, 0.01, 0.1\}$ and $\alpha \in \{0.0, 0.5, 1.0\}$.
+where $\hat{p}_i = \sigma(\mathbf{w}^\top \mathbf{x}_i + b)$, $w_i$ is the class weight ($w_+ = n_- / n_+$ for positive instances), and $(\lambda, \alpha)$ are selected via grid search.
 
 ### Objective Function — Stage 2: GBT Regressor (Residual Model)
 
@@ -78,7 +78,7 @@ $$
 \mathcal{L}_{\text{residual}}(\mathbf{\Theta}) = \frac{1}{N}\sum_{i=1}^{N} \Big(r_i - f_{\text{GBT}}(\mathbf{x}_i; \mathbf{\Theta})\Big)^2
 $$
 
-Hyperparameters: `max_depth=5`, `n_estimators=100`, `learning_rate=0.1`, `subsample=0.8`, `colsample_bytree=0.8`. The ensemble prediction:
+Standard moderate hyperparameters (shallow trees, conservative learning rate, column/row subsampling). The ensemble prediction:
 
 $$
 \hat{y}_{\text{final},i} = \text{clip}\!\Big(\hat{p}_{\text{base},i} + f_{\text{GBT}}(\mathbf{x}_i; \hat{\mathbf{\Theta}}),\; 0,\; 1\Big)
@@ -96,15 +96,15 @@ This architecture — and the rationale for a unified model over segmented alter
 
 ### Feature Engineering
 
-Over 80 features across 8 groups, all computed from the prior month-end snapshot (strict temporal consistency):
+Dozens of features across several groups, all computed from the prior month-end snapshot (strict temporal consistency):
 
 **Payment Instrument Characteristics** — transfer type classification (bank transfer, card, giro), financial institution encoding, instrument validity indicators, card expiration proximity risk flags (high / medium / low / no expiry)
 
-**Behavioral Delay Distributions** — rolling 6-month payment delay statistics (mean, maximum, count exceeding a 5-day threshold), method-change signals, historical delinquency rates at 6-month and full-history horizons, reinstatement history indicators
+**Behavioral Delay Distributions** — rolling multi-month payment delay statistics (mean, maximum, count exceeding a delay threshold), method-change signals, historical delinquency rates at multiple horizons, reinstatement history indicators
 
 **Bundle Billing Risk** — co-billed policy counts, premium concentration ratios, bundle-level historical failure rates, endorsement intensity (none / low / medium / high), premium concentration classification (single / concentrated / distributed)
 
-**Contract Maturity Profile** — tenure segments (initial / early / mid / long-term), premium burden tiers (low through very high), premium growth rate, premium shock flags (month-over-month changes $\geq 10\%$ and $\geq 20\%$), auto-renewal indicators
+**Contract Maturity Profile** — tenure segments (initial / early / mid / long-term), premium burden tiers (low through very high), premium growth rate, premium shock flags (month-over-month changes exceeding calibrated thresholds), auto-renewal indicators
 
 > **Margin note:**
 > Cyclic encoding avoids the discontinuity problem: without it, month 12 and month 1 appear maximally distant despite being adjacent. The $\sin$/$\cos$ representation maps the 12 months onto a unit circle, preserving circular proximity.
@@ -123,7 +123,7 @@ $$
 
 ### Validation
 
-Time-based OOS split: 70% of available months for training (minimum 6 months), 30% for testing. An explicit 80/20 sub-split within training provides a validation set for hyperparameter selection. Evaluation via AUC, KS, Gini, and decile lift analysis.
+Time-based OOS split: a majority of available months for training, the remainder for testing. A further sub-split within training provides a validation set for hyperparameter selection. Evaluation via AUC, KS, Gini, and decile lift analysis.
 
 ## Causal Model: Double Machine Learning
 
@@ -192,7 +192,7 @@ $$
 \tilde{T}_i = T_i - \hat{m}(W_i), \quad \hat{m}(W) = \mathbb{E}[T \mid W]
 $$
 
-Both $\hat{g}$ and $\hat{m}$ are XGBoost models (`max_depth=5`, `n_estimators=100`, `learning_rate=0.1`) trained with 2-fold cross-fitting to avoid overfitting bias. The outcome model $\hat{g}$ uses `XGBClassifier` (binary outcome); the treatment model $\hat{m}$ uses `XGBClassifier` for binary treatments and `XGBRegressor` for continuous treatments, wrapped in a multi-output estimator.
+Both $\hat{g}$ and $\hat{m}$ are XGBoost models with standard moderate hyperparameters, trained with cross-fitting to avoid overfitting bias. The outcome model $\hat{g}$ uses `XGBClassifier` (binary outcome); the treatment model $\hat{m}$ uses `XGBClassifier` for binary treatments and `XGBRegressor` for continuous treatments, wrapped in a multi-output estimator.
 
 **Stage 2 — Causal estimation:**
 
@@ -213,7 +213,7 @@ The model is estimated separately for bank transfer and card payment populations
 
 ### Confounders
 
-30+ confounders organized by type:
+Dozens of confounders organized by type:
 
 - **Continuous:** payment delay statistics, delinquency rates at multiple horizons, reinstatement counts, billing experience depth, success rates, financial institution stability scores, endorsement counts, bundle characteristics, premium growth rates, cyclic time features
 - **Binary:** first-payment indicators, tenure stage flags, bundle membership, delinquency history, method-change flags
@@ -238,7 +238,7 @@ I presented the DML causal model alongside a simpler alternative: a **leaf-based
 
 The DML framework was statistically superior:
 
-- It controlled for 30+ confounders via orthogonalization, isolating the causal effect from selection bias
+- It controlled for dozens of confounders via orthogonalization, isolating the causal effect from selection bias
 - It produced valid confidence intervals under conditional independence
 - It enabled counterfactual reasoning — predicting what *would* happen under a billing day change, not what *has been observed* for customers who happen to be on that day
 
@@ -255,7 +255,7 @@ This reflects a recurring tension in applied modeling. The most rigorous model i
 | Layer | Technology |
 |-------|-----------|
 | Data Platform | Databricks, Delta Lake |
-| Feature Engineering | PySpark (80+ features, 8+ source tables) |
+| Feature Engineering | PySpark (dozens of features, multiple source tables) |
 | Predictive Model | PySpark MLlib (LR) + XGBoost (Two-Stage Residual) |
 | Causal Model | EconML LinearDML + XGBoost nuisance models |
 | Validation | Time-based OOS, explicit train/validation sub-split |

@@ -16,15 +16,15 @@ draft: false
 
 An insurance company runs monthly outbound call campaigns targeting existing policyholders. A substantial fraction of calls fail to connect. Each unanswered call represents wasted agent labor and displaced opportunity cost. The objective is to rank customers by contact probability so that agents prioritize the most reachable segment of the list.
 
-The target variable is binary: whether a customer has a meaningful phone conversation ($\geq 60$ seconds) during a given campaign month.
+The target variable is binary: whether a customer has a meaningful phone conversation (exceeding a duration threshold) during a given campaign month.
 
 This model serves the same outbound campaign infrastructure as the [[reinstatement-model-imbalanced-classification|reinstatement prediction model]], but targets a different outcome: reachability rather than conversion.
 
 ## Feature Engineering
 
-32 features across 10 groups, constructed from campaign logs, policy records, claims history, customer service interactions, and coverage tables. All features are joined on a common customer key and use a strict one-month lag: for campaign month $t$, features reflect data available through month $t-1$.
+Dozens of features across several groups, constructed from campaign logs, policy records, claims history, customer service interactions, and coverage tables. All features are joined on a common customer key and use a strict one-month lag: for campaign month $t$, features reflect data available through month $t-1$.
 
-**Contact Behavioral History** — rolling 12-month successful contact count, campaign exposure frequency, historical time-of-day patterns (AM/PM receptiveness indicators), total call attempt counts
+**Contact Behavioral History** — rolling multi-month successful contact count, campaign exposure frequency, historical time-of-day patterns (AM/PM receptiveness indicators), total call attempt counts
 
 **Policy Portfolio Indicators** — active contract count, aggregate monthly premium, lapsed and cancelled policy counts, months since most recent policy inception
 
@@ -32,7 +32,7 @@ This model serves the same outbound campaign infrastructure as the [[reinstateme
 
 **Product Composition** — underwriting-flagged contract counts, supplemental insurance prevalence
 
-**Claim Utilization Patterns** — 3-year claim frequency and magnitude indicators, partitioned by product category
+**Claim Utilization Patterns** — multi-year claim frequency and magnitude indicators, partitioned by product category
 
 **Demographic Characteristics** — gender, age cohort, residential region, payment modality
 
@@ -55,14 +55,14 @@ where $R$ is a percentile-ranked tenure measure, $F$ is a dense-rank-normalized 
 
 ### Preprocessing
 
-Starting from 44 candidate features:
+Starting from the initial candidate feature set:
 
-- 5 constant-value columns removed (zero variance across the dataset)
-- 2 redundant columns dropped (perfect correlation with existing features)
+- Constant-value columns removed (zero variance across the dataset)
+- Redundant columns dropped (perfect correlation with existing features)
 - Negative values in temporal features (indicating data quality issues) set to null
-- $\log(1 + x)$ transformation applied to 7 heavily right-skewed monetary and coverage amount variables (spanning magnitudes of $10^{10}$ to $10^{12}$)
+- $\log(1 + x)$ transformation applied to heavily right-skewed monetary and coverage amount variables (spanning several orders of magnitude)
 
-Final feature count after preprocessing: 32.
+The remaining features after preprocessing form the final model input.
 
 ## Handling Class Imbalance
 
@@ -85,11 +85,11 @@ The two-stage residual learning pipeline:
 
 ```mermaid
 flowchart LR
-    X["Feature Vector<br/>𝐱ᵢ ∈ ℝ³²"] --> LR["Stage 1<br/>Logistic Regression<br/>(ℓ₂-regularized)"]
+    X["Feature Vector<br/>𝐱ᵢ ∈ ℝᵈ"] --> LR["Stage 1<br/>Logistic Regression<br/>(ℓ₂-regularized)"]
     LR --> P["p̂_base"]
     P --> R["Residual<br/>rᵢ = yᵢ − p̂ᵢ"]
     Y["True Label<br/>yᵢ"] --> R
-    R --> GBT["Stage 2<br/>GBT Regressor<br/>(depth=4)"]
+    R --> GBT["Stage 2<br/>GBT Regressor<br/>(shallow)"]
     X --> GBT
     GBT --> RES["f_GBT(𝐱ᵢ)"]
     P --> CLIP["clip(p̂ + f_GBT, 0, 1)"]
@@ -109,7 +109,7 @@ $$
 \mathcal{L}_{\text{base}}(\mathbf{w}, b) = -\frac{1}{N}\sum_{i=1}^{N} w_i \Big[ y_i \log \hat{p}_i + (1 - y_i) \log(1 - \hat{p}_i) \Big] + \lambda \Big[\alpha \|\mathbf{w}\|_1 + (1 - \alpha) \|\mathbf{w}\|_2^2 \Big]
 $$
 
-where $\hat{p}_i = \sigma(\mathbf{w}^\top \mathbf{x}_i + b)$ and $w_i$ is the class weight ($w_+ = n_- / n_+$ for positive instances, $1.0$ for negative). The regularization strength $\lambda$ and elastic net mixing parameter $\alpha$ are selected via 3-fold cross-validation over a grid of $\lambda \in \{0.01, 0.1\}$ and $\alpha \in \{0.0, 0.5\}$.
+where $\hat{p}_i = \sigma(\mathbf{w}^\top \mathbf{x}_i + b)$ and $w_i$ is the class weight ($w_+ = n_- / n_+$ for positive instances, $1.0$ for negative). The regularization strength $\lambda$ and elastic net mixing parameter $\alpha$ are selected via k-fold cross-validation over a grid search.
 
 Three categorical features (contact time-of-day pattern, occupational tier, value segment) pass through `StringIndexer` $\to$ `OneHotEncoder`. All numeric features are standard-scaled prior to fitting.
 
@@ -127,7 +127,7 @@ $$
 \mathcal{L}_{\text{residual}}(\mathbf{\Theta}) = \frac{1}{N}\sum_{i=1}^{N} \Big(r_i - f_{\text{GBT}}(\mathbf{x}_i; \mathbf{\Theta})\Big)^2
 $$
 
-The tree is deliberately shallow (`maxDepth=4`, `maxIter=30`, `stepSize=0.1`) — sufficient to capture non-linear interactions without overfitting to noise.
+The tree is deliberately shallow (moderate depth, conservative learning rate) — sufficient to capture non-linear interactions without overfitting to noise.
 
 ### Ensemble Combination
 
@@ -160,7 +160,7 @@ Validation metrics (AUC, KS, Gini) tracked closely between development and holdo
 
 ### Decile Analysis
 
-The operational value is in the ranked list. Top-decile contact rates substantially exceeded the population average, and the top 40% of the ranked list captured a disproportionate share of successful contacts. Bottom deciles showed contact rates well below baseline. If the business has limited agent capacity, excluding the lowest-ranked deciles sacrifices few successful contacts while recovering significant call-center throughput.
+The operational value is in the ranked list. Top-decile contact rates substantially exceeded the population average, and the top fraction of the ranked list captured a disproportionate share of successful contacts. Bottom deciles showed contact rates well below baseline. If the business has limited agent capacity, excluding the lowest-ranked deciles sacrifices few successful contacts while recovering significant call-center throughput.
 
 ### Feature Interpretation
 
@@ -178,14 +178,14 @@ The negative coefficient on campaign exposure frequency is the most actionable f
 
 The model specification was designed iteratively with Gemini — specifically debating whether to build segment-specific models or a single global model with segment features included. The single-model approach prevailed for the statistical reasons described above.
 
-Claude Code then generated the full pipeline from `.md` prompt files: a 300+ line Spark SQL feature engineering query joining multiple source tables with time-travel consistency, and the PySpark training script implementing the two-stage ensemble, cross-validation, decile evaluation, and MLflow experiment tracking.
+Claude Code then generated the full pipeline from `.md` prompt files: a large Spark SQL feature engineering query joining multiple source tables with time-travel consistency, and the PySpark training script implementing the two-stage ensemble, cross-validation, decile evaluation, and MLflow experiment tracking.
 
 ## Technical Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Data Platform | Databricks, Delta Lake |
-| Feature Engineering | Spark SQL (32 features, multi-table joins) |
+| Feature Engineering | Spark SQL (dozens of features, multi-table joins) |
 | Model | PySpark MLlib (LR) + GBT Regressor (Two-Stage Residual) |
 | Validation | Time-based holdout, decile lift analysis |
 | Experiment Tracking | MLflow |

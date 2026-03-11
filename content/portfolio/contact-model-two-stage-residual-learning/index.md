@@ -18,6 +18,8 @@ An insurance company runs monthly outbound call campaigns targeting existing pol
 
 The target variable is binary: whether a customer has a meaningful phone conversation ($\geq 60$ seconds) during a given campaign month.
 
+This model serves the same outbound campaign infrastructure as the [[reinstatement-model-imbalanced-classification|reinstatement prediction model]], but targets a different outcome: reachability rather than conversion.
+
 ## Feature Engineering
 
 32 features across 10 groups, constructed from campaign logs, policy records, claims history, customer service interactions, and coverage tables. All features are joined on a common customer key and use a strict one-month lag: for campaign month $t$, features reflect data available through month $t-1$.
@@ -147,6 +149,8 @@ The original design considered partitioned segmentation — training separate mo
 **Complementary learning.** The logistic regression captures population-level linear effects (premium magnitude, tenure, seasonality). The GBT then captures non-linear micro-interactions *within the residual space* — interactions that segment boundaries would either miss or arbitrarily split. This division of labor between macro-trends and micro-corrections is more principled than forcing segment-specific models to independently learn both.
 
 **Empirical superiority.** The ensemble's discrimination metrics consistently exceeded those of any individual segment-specific model. Segment variables (time-of-day, occupation tier, value class) proved more informative as *features within a unified model* than as *partitioning criteria for separate models*.
+
+The same single-model-over-segmentation argument applies to the [[billing-model-causal-inference-ml-or|billing collection model]], which uses the identical two-stage architecture on payment success prediction.
 
 ## Validation
 

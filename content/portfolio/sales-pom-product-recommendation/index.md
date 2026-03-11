@@ -1,6 +1,5 @@
 ---
-title: 'Persona-Based Product Recommendation: A Two-Stage ML/Rule Hybrid for Insurance
-  Cross-Sell'
+title: Persona-Based Product Recommendation for Insurance Cross-Sell
 description: An end-to-end product recommendation system combining two-stage residual
   ensembles for high-frequency targets with persona-based conversion rate lookups
   for sparse targets, unified via smoothed lift calibration.
@@ -210,6 +209,8 @@ Three business filters applied before final ranking:
 3. **Recent purchase filter** — products purchased within the last 2 months are zeroed
 
 After filtering, products are ranked by lift score and the top 3 selected.
+
+Customers excluded by the churn filter may instead be routed to the [[sales-ab-lapsed-customer-reactivation|lapsed customer reactivation model]], which adapts the same persona-based architecture for the zero-active-contract population.
 
 ## Validation
 

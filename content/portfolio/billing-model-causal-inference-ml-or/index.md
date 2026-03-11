@@ -1,6 +1,5 @@
 ---
-title: 'Billing Collection: Predictive ML, Causal Inference via Double Machine Learning,
-  and the Business Decision'
+title: 'Billing Collection: Two-Stage ML, Causal Inference, and the Business Decision'
 description: Building a two-stage residual ensemble for payment prediction and a LinearDML
   causal model for billing schedule optimization — and why the business chose neither.
 author: Jiheon (Jay) Park
@@ -53,6 +52,8 @@ $$
 
 This scales each observation's contribution to the loss gradient by the inverse frequency of its class. The weighting is computed dynamically per training period and applied to both the logistic regression base and the XGBoost residual model. By operating on the loss function rather than the data, cost-sensitive weighting preserves the original feature distribution and produces better-calibrated probability estimates than synthetic oversampling.
 
+The [[reinstatement-model-imbalanced-classification|reinstatement prediction model]] applies this same cost-sensitive weighting under far more severe imbalance, with a formal comparison of OLS, Ridge, and Lasso regularization strategies.
+
 ### Objective Function — Stage 1: Logistic Regression (Base Model)
 
 The base model minimizes the $\ell_2$-regularized negative log-likelihood with class-weighted instances:
@@ -90,6 +91,8 @@ The billing model uses the full policy population rather than training separate 
 1. **Sample preservation.** Segmentation fractures the dataset. When a segment contains insufficient observations, the GBT residual stage cannot learn meaningful correction patterns.
 2. **Complementary learning.** The logistic regression captures linear effects (premium magnitude, tenure, seasonality). The GBT corrects for non-linear interactions in the residual space — interactions that segment boundaries would either miss or arbitrarily partition.
 3. **Empirical performance.** The unified ensemble's discrimination metrics exceeded those of segment-specific models.
+
+This architecture — and the rationale for a unified model over segmented alternatives — is shared with the [[contact-model-two-stage-residual-learning|outbound contact prediction model]], which applies the same two-stage residual approach to a different business target.
 
 ### Feature Engineering
 

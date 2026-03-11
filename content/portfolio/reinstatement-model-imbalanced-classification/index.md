@@ -1,6 +1,5 @@
 ---
-title: 'Predicting Policy Reinstatement Under Class Imbalance: OLS, Ridge, Lasso,
-  and Two-Stage Residual Learning'
+title: Policy Reinstatement Prediction with Regularized Two-Stage Residual Learning
 description: A cost-sensitive two-stage ensemble for reinstatement prediction on heavily
   imbalanced data, with a formal comparison of OLS, Ridge, and Lasso objective functions
   and their implications for correlated insurance features.
@@ -20,6 +19,8 @@ draft: false
 When an insurance policy lapses due to missed premiums, the customer has a limited window to reinstate it. The business runs monthly outbound campaigns targeting recently lapsed customers, but the reinstatement rate is very low — the vast majority of outreach is directed at customers who will not return.
 
 The task: predict which recently lapsed customers will reinstate within a 45-day window from the campaign reference date. The constraint: severe class imbalance and a target population restricted to customers who lapsed within the preceding 90 days.
+
+Customers who do not reinstate within this window may later enter the [[sales-ab-lapsed-customer-reactivation|lapsed customer reactivation pipeline]], which uses a persona-based recommendation system to re-engage them with new product offers.
 
 ## Feature Engineering
 
@@ -163,6 +164,8 @@ XGBoost hyperparameters: `max_depth=4`, `n_estimators=100`, `learning_rate=0.1`,
 $$
 \hat{y}_{\text{final},i} = \text{clip}\!\Big(\hat{p}_{\text{base},i} + f_{\text{XGB}}(\mathbf{x}_i; \hat{\mathbf{\Theta}}),\; 0,\; 1\Big)
 $$
+
+This two-stage residual architecture is the same framework used in the [[contact-model-two-stage-residual-learning|outbound contact prediction model]], where the logistic regression captures population-level linear effects and the gradient-boosted residual stage corrects for non-linear interactions.
 
 ## Validation
 

@@ -1,5 +1,5 @@
 ---
-title: Persona-Based Product Recommendation for Insurance Cross-Sell
+title: Persona-Based Insurance Product Recommendation
 description: An end-to-end product recommendation system combining two-stage residual
   ensembles for high-frequency targets with persona-based conversion rate lookups
   for sparse targets, unified via smoothed lift calibration.
@@ -13,6 +13,20 @@ tags:
 - AI Workflow
 draft: false
 ---
+
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data Platform | Databricks, Delta Lake |
+| Feature Engineering | Spark SQL (over a hundred features, multiple source tables) |
+| Clustering | K-Means + Decision Tree Surrogate |
+| ML Models | PySpark MLlib LR + SparkXGBRegressor (per-product OvR) |
+| Rule Models | Persona-code conversion rate lookup (Spark-native) |
+| Calibration | Smoothed Lift ($\alpha = 0.01$) |
+| Experiment Tracking | MLflow (models, metadata, persona rules) |
+| AI Workflow | Gemini (persona design) + Claude Code (4 pipeline scripts) |
+
 
 ## Problem Statement
 
@@ -219,15 +233,3 @@ Gemini helped design the value dimension scoring — specifically the 6-conditio
 3. **Training** — per-product two-stage ensemble + rule-target conversion rate computation + MLflow logging
 4. **Inference** — model restoration, scoring, lift calibration, post-processing, top-3 ranking
 
-## Technical Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Data Platform | Databricks, Delta Lake |
-| Feature Engineering | Spark SQL (over a hundred features, multiple source tables) |
-| Clustering | K-Means + Decision Tree Surrogate |
-| ML Models | PySpark MLlib LR + SparkXGBRegressor (per-product OvR) |
-| Rule Models | Persona-code conversion rate lookup (Spark-native) |
-| Calibration | Smoothed Lift ($\alpha = 0.01$) |
-| Experiment Tracking | MLflow (models, metadata, persona rules) |
-| AI Workflow | Gemini (persona design) + Claude Code (4 pipeline scripts) |

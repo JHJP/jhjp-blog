@@ -14,6 +14,19 @@ tags:
 draft: false
 ---
 
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data Platform | Databricks, Delta Lake |
+| Feature Engineering | PySpark (dozens of features, multiple source tables, target encoding) |
+| Model | Logistic Regression + XGBoost (Two-Stage Residual, cost-sensitive) |
+| Regularization | Ridge ($\ell_2$) for base model; $\ell_1 + \ell_2$ for residual model |
+| Imbalance Handling | Class-proportional instance weighting |
+| Validation | Time-based holdout with maturity gap, leakage detection |
+| AI Workflow | Gemini (value scoring design) + Claude Code (4 FE scripts + training pipeline) |
+
+
 ## Problem Statement
 
 When an insurance policy lapses due to missed premiums, the customer has a limited window to reinstate it. The business runs monthly outbound campaigns targeting recently lapsed customers, but the reinstatement rate is very low — the vast majority of outreach is directed at customers who will not return.
@@ -208,14 +221,3 @@ The missed payment finding is notable. It suggests the model distinguishes betwe
 
 Gemini helped design the value scoring scheme and the priority score formulation. Claude Code generated four PySpark scripts from `.md` prompt specifications: base feature engineering, value score computation, missed payment and loan feature extraction, and the preprocessing pipeline — plus the training script with cost-sensitive two-stage ensemble, decile analysis, calibration checks, and leakage detection.
 
-## Technical Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Data Platform | Databricks, Delta Lake |
-| Feature Engineering | PySpark (dozens of features, multiple source tables, target encoding) |
-| Model | Logistic Regression + XGBoost (Two-Stage Residual, cost-sensitive) |
-| Regularization | Ridge ($\ell_2$) for base model; $\ell_1 + \ell_2$ for residual model |
-| Imbalance Handling | Class-proportional instance weighting |
-| Validation | Time-based holdout with maturity gap, leakage detection |
-| AI Workflow | Gemini (value scoring design) + Claude Code (4 FE scripts + training pipeline) |

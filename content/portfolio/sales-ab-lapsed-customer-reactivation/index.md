@@ -13,6 +13,19 @@ tags:
 draft: false
 ---
 
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data Platform | Databricks, Delta Lake |
+| Feature Engineering | Spark SQL (shared schema with active-customer model) |
+| Clustering | K-Means + Decision Tree Surrogate |
+| ML Model | PySpark MLlib LR + SparkXGBRegressor (single product) |
+| Rule Models | Persona-code conversion rate lookup (Spark-native) |
+| Calibration | Smoothed Lift ($\alpha = 0.01$) |
+| Inference | Spark-native (broadcast joins, no UDFs) |
+| AI Workflow | Gemini (architecture adaptation) + Claude Code (pipeline generation) |
+
 ## Context
 
 This post is a companion to the [[portfolio/sales-pom-product-recommendation/index|existing-customer product recommendation model]]. Both use the same architecture — persona-based clustering, two-stage ML/Rule hybrid scoring, smoothed lift calibration — but target fundamentally different populations. The existing-customer model targets active policyholders ($\geq 1$ active contract). This model targets **lapsed customers**: those with zero active contracts who have lapsed or terminated their policies.
@@ -132,15 +145,4 @@ Building the same architecture for two populations exposes where persona-based r
 
 **Architectural implication.** The ML/Rule split threshold should arguably be population-dependent. For a smaller population, the threshold represents a meaningful fraction of the data. For a larger population, the same threshold is a tiny fraction, potentially leaving products with many positives on the rule track that might benefit from discriminative modeling (perhaps with stronger regularization or a simpler model family than the full two-stage ensemble).
 
-## Technical Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Data Platform | Databricks, Delta Lake |
-| Feature Engineering | Spark SQL (shared schema with active-customer model) |
-| Clustering | K-Means + Decision Tree Surrogate |
-| ML Model | PySpark MLlib LR + SparkXGBRegressor (single product) |
-| Rule Models | Persona-code conversion rate lookup (Spark-native) |
-| Calibration | Smoothed Lift ($\alpha = 0.01$) |
-| Inference | Spark-native (broadcast joins, no UDFs) |
-| AI Workflow | Gemini (architecture adaptation) + Claude Code (pipeline generation) |

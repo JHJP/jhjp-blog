@@ -12,6 +12,17 @@ tags:
 draft: false
 ---
 
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data Platform | Databricks, Delta Lake |
+| Feature Engineering | Spark SQL (dozens of features, multi-table joins) |
+| Model | PySpark MLlib (LR) + GBT Regressor (Two-Stage Residual) |
+| Validation | Time-based holdout, decile lift analysis |
+| Experiment Tracking | MLflow |
+| AI Workflow | Gemini (architecture design) + Claude Code (pipeline generation) |
+
 ## Problem Statement
 
 An insurance company runs monthly outbound call campaigns targeting existing policyholders. A substantial fraction of calls fail to connect. Each unanswered call represents wasted agent labor and displaced opportunity cost. The objective is to rank customers by contact probability so that agents prioritize the most reachable segment of the list.
@@ -180,13 +191,4 @@ The model specification was designed iteratively with Gemini — specifically de
 
 Claude Code then generated the full pipeline from `.md` prompt files: a large Spark SQL feature engineering query joining multiple source tables with time-travel consistency, and the PySpark training script implementing the two-stage ensemble, cross-validation, decile evaluation, and MLflow experiment tracking.
 
-## Technical Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Data Platform | Databricks, Delta Lake |
-| Feature Engineering | Spark SQL (dozens of features, multi-table joins) |
-| Model | PySpark MLlib (LR) + GBT Regressor (Two-Stage Residual) |
-| Validation | Time-based holdout, decile lift analysis |
-| Experiment Tracking | MLflow |
-| AI Workflow | Gemini (architecture design) + Claude Code (pipeline generation) |

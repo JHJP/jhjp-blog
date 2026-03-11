@@ -13,6 +13,18 @@ tags:
 draft: false
 ---
 
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data Platform | Databricks, Delta Lake |
+| Feature Engineering | PySpark (dozens of features, multiple source tables) |
+| Predictive Model | PySpark MLlib (LR) + XGBoost (Two-Stage Residual) |
+| Causal Model | EconML LinearDML + XGBoost nuisance models |
+| Validation | Time-based OOS, explicit train/validation sub-split |
+| Experiment Tracking | MLflow |
+| AI Workflow | Gemini (endogeneity analysis, DML design) + Claude Code (code generation) |
+
 ## Problem Statement
 
 A large insurance company collects monthly premiums from a large portfolio of policies. Some payments fail. The business requires answers to two fundamentally different questions: *which* payments are likely to fail (prediction), and *what can be changed* to prevent failure (causal inference).
@@ -250,14 +262,4 @@ I documented the statistical risks in the model handoff: omitted variable bias f
 
 This reflects a recurring tension in applied modeling. The most rigorous model is not always the one that ships. The right deliverable is the one the organization can operationalize — even when a more principled alternative exists.
 
-## Technical Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Data Platform | Databricks, Delta Lake |
-| Feature Engineering | PySpark (dozens of features, multiple source tables) |
-| Predictive Model | PySpark MLlib (LR) + XGBoost (Two-Stage Residual) |
-| Causal Model | EconML LinearDML + XGBoost nuisance models |
-| Validation | Time-based OOS, explicit train/validation sub-split |
-| Experiment Tracking | MLflow |
-| AI Workflow | Gemini (endogeneity analysis, DML design) + Claude Code (code generation) |

@@ -34,6 +34,9 @@ content/
 ├── portfolio/            ← ML project write-ups (5 posts)
 │   └── <slug>/index.md
 └── research/             ← Auto-populated by local RAG pipeline
+
+private/
+└── research/             ← Gitignored research briefs (Obsidian-formatted, draft-only)
 ```
 
 ## Content Conventions

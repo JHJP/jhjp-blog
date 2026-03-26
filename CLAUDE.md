@@ -35,8 +35,8 @@ content/
 │   └── <slug>/index.md
 └── research/             ← Auto-populated by local RAG pipeline
 
-private/
-└── research/             ← Gitignored research briefs (Obsidian-formatted, draft-only)
+personal/
+└── Research/             ← Gitignored research briefs (Obsidian-formatted, draft-only)
 ```
 
 ## Content Conventions

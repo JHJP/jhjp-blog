@@ -22,7 +22,7 @@ The site auto-deploys on push to `main` via `.github/workflows/deploy.yml` (buil
 - `quartz/styles/base.scss` — Quartz core styles (do not edit unless necessary)
 - `quartz/styles/variables.scss` — SCSS breakpoints and layout variables
 - `quartz/components/` — Quartz component source (TSX + SCSS)
-- `content/` — Markdown content (symlink to Obsidian vault's `Blog` folder)
+- `content/` — Markdown content (real directory, git-tracked; vault's `Blog` folder symlinks here)
 - `public/` — Build output (gitignored)
 
 ## Content Structure
@@ -35,7 +35,7 @@ content/
 │   └── <slug>/index.md
 └── research/             ← Auto-populated by local RAG pipeline
 
-personal/
+personal/                    ← Symlink → ~/Obsidian/Aleph/Personal/ (synced via Obsidian Sync)
 └── Research/             ← Gitignored research briefs (Obsidian-formatted, draft-only)
 ```
 
@@ -61,7 +61,7 @@ personal/
 - The blog contains **redacted** versions of production ML work — never include real company names, client details, or proprietary data
 - Base URL: `jhjp.github.io/jhjp-blog`
 - GitHub repo: `JHJP/jhjp-blog`
-- Obsidian vault integration: symlink vault's `Blog` folder → `content/`; `.obsidian` is in `ignorePatterns`
+- Obsidian vault (`~/Obsidian/Aleph/`): `Blog/` symlinks to repo's `content/` (local editing); `Personal/` is a real directory synced via Obsidian Sync. Repo's `personal/` symlinks back to vault's `Personal/`. `.obsidian` is in `ignorePatterns`
 - The `RemoveDrafts` filter plugin excludes any content with `draft: true` in frontmatter
 
 # Blogging Skill: The Data Sanitizer

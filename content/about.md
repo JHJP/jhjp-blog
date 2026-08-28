@@ -4,7 +4,7 @@ enableToc: false
 links:
 - icon: linkedin
   text: LinkedIn
-  href: www.linkedin.com/in/jiheon-park-89a1a1203
+  href: www.linkedin.com/in/ji-heon-jay-park-89a1a1203
 - icon: github
   text: Github
   href: https://github.com/JHJP

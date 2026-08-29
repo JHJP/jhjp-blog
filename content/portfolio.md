@@ -39,11 +39,11 @@ Problem definition through deployment specification.**
 Azure Databricks and Delta Lake, PySpark and Spark SQL over multi-table joins with strict
 temporal lag, PySpark MLlib and XGBoost, MLflow, time-based out-of-sample validation.
 
-> [!important] What is not on this page
-> Client raw data and deliverables are not mine to release, so none of it is here. What
-> follows is the method, and results measured on holdout windows the models never saw during
-> training. The full design reasoning for all five is published in the engineering posts on
-> this site.
+> [!important] What is and is not on this page
+> The client is not named, and no raw data, source table, or deliverable document is
+> reproduced here. What follows is the method and the numbers I measured on holdout windows
+> the models never saw during training. The full design reasoning for all five is published
+> in the engineering posts on this site.
 
 All five ran the same way: define the prediction target and the population with the client,
 interview the operating team to find which variables actually carry meaning, engineer
@@ -83,9 +83,9 @@ finding, and it is measurable.
 | Model | Method | Measured on a holdout window |
 |---|---|---|
 | **Policy reinstatement** | Cost-sensitive two-stage residual learner under severe class imbalance. L2-regularized base, L1-plus-L2 residual stage, class-proportional weighting, maturity-gap holdout | Top-decile lift 3.29x on customer-level priority-score ranking. Test AUC 0.719, overfitting gap 1.87 percentage points. The ensemble moved validation AUC from 0.7031 to 0.7191 over the base learner |
-| **Persona-based product recommendation** | K-Means with a decision-tree surrogate for interpretable personas, then per-product one-vs-rest learners for dense targets and persona conversion-rate lookup for sparse ones, unified by smoothed-lift calibration | Recall@3 83.3%, MAP@3 0.65, test AUC 0.743, overfitting gap 1.18 percentage points |
-| **Lapsed-customer recommendation** | Same architecture retrained on customers with zero active contracts. Value-score thresholds and clusters recomputed on that population; features rebuilt from contract history rather than current holdings | Recall@3 75.7%, MAP@3 0.611. Relative ranking held while absolute precision fell sharply between validation and test, and I documented that gap rather than reporting the validation figure |
-| **Outbound contact prediction** | Incumbent reachability model rebuilt as a logistic base with a gradient-boosted residual, evaluated by decile lift | Out-of-sample AUC moved from 0.586 for the base regression to 0.647 for the residual ensemble, with a 0.1 percentage-point gap between development and validation windows |
+| **Persona-based product recommendation** | K-Means with a decision-tree surrogate for interpretable personas, then per-product one-vs-rest learners for the 18 product groups with enough density and persona conversion-rate lookup for the 4 sparse ones, unified by smoothed-lift calibration | Campaign conversion 2.3% to 4.67%, a 2.02x lift over business as usual. Top-decile lift 3.58x, customer-level on priority-score ranking. Recall@3 83.3%, MAP@3 0.65, test AUC 0.743, overfitting gap 1.18 percentage points |
+| **Lapsed-customer recommendation** | Same architecture retrained on customers with zero active contracts. Value-score thresholds and clusters recomputed on that population; features rebuilt from contract history rather than current holdings. At equal volume only 1 of 22 product groups still had the density for a model, so 21 went through persona conversion-rate lookup | Recall@3 75.7%, MAP@3 0.611. Relative ranking held while absolute precision fell sharply between validation and test, and I documented that gap rather than reporting the validation figure |
+| **Outbound contact prediction** | Incumbent reachability model rebuilt as a logistic base with a gradient-boosted residual over 176k training and 34k validation records, evaluated by decile lift | Out-of-sample AUC moved from 0.586 for the base regression to 0.647 for the residual ensemble, with a 0.1 percentage-point gap between development and validation windows. On the validation window the top decile of the ranked list reached 76.5% contact success and the bottom decile 32.2%, against an overall average contact rate of 50.0% on the actual campaign |
 | **Billing collection** | Two-stage residual ensemble for premium-payment failure, plus an EconML LinearDML causal model for billing-day optimization | Billing-day assignment is endogenous. Orthogonalized it and estimated per-treatment effects with confidence intervals across billing-day buckets and payment-method routing |
 
 On the last one: I presented the DML implementation alongside a simpler leaf-based
@@ -181,39 +181,12 @@ scores each review by the reputational damage it can cause and solves for which 
 answer, in what order, and by which method, under a cost budget and a one-method-per-review
 constraint. That is a generalized assignment problem.
 
-```mermaid
-flowchart LR
-    IN1["Brand name"] --> XRL["X Review Lab"]
-    IN2["Manufacturing<br/>information"] --> XRL
-    IN2 -.-> DB[("Vectorized<br/>database")]
-    XRL --> C
+![X Review Lab system architecture: customer input on the left, review collection and keyword extraction with cost and time mapping in the middle, optimization order and decision support on the right](images/xreviewlab_architecture.png)
 
-    subgraph AIE["AI engine"]
-      direction TB
-      C["Collect reviews<br/>by product"] --> K["Keyword extraction and<br/>cost / time mapping"]
-      C --> AR["Automatic replies<br/>per review"]
-      K --> KV["Keyword<br/>visualization"]
-      K --> CA["Analysis of the<br/>cause of complaints"]
-    end
-
-    subgraph OPT["Optimizer"]
-      direction TB
-      BT["Available budget<br/>and time"] --> O["Optimization order<br/>suggestion and visualization"]
-    end
-
-    K --> O
-    O --> D["Decision making"]
-    DB -.-> C
-
-    style XRL fill:#ffffff,stroke:#7b4fd9
-    style C fill:#ddd6fe,stroke:#7b4fd9
-    style K fill:#ddd6fe,stroke:#7b4fd9
-    style O fill:#ddd6fe,stroke:#7b4fd9
-    style D fill:#ddd6fe,stroke:#7b4fd9
-    style AR fill:#bbf7d0,stroke:#34a853
-    style KV fill:#bbf7d0,stroke:#34a853
-    style CA fill:#bbf7d0,stroke:#34a853
-```
+*System architecture. Customer input on the left (brand name, manufacturing information,
+available budget and time), review collection and keyword extraction with cost and time
+mapping in the middle, and the computed response order and decision support on the right.
+The original is in the [GitHub README](https://github.com/JHJP/xreviewlab).*
 
 **What I built.** Problem definition, review collection, embedding-based search, keyword
 clustering with cost and time mapping, the optimization module, and a demo web front end.
@@ -237,6 +210,14 @@ optimization (cvxpy), with a trend rule that rotates risk assets into short-term
 during sustained decline to cap drawdown. An execution module diffs recommended weights
 against current holdings to produce actual buy and sell quantities. A multi-stage LLM agent
 writes the monthly rationale report. Python, FastAPI, React, Render.
+
+![Porteezy home screen, showing the asset allocation computed for the current month
+alongside the drawdown and annualized return measured over the backtest
+window](images/porteezy_home_kr.png)
+
+*The live service. On the right is the allocation computed for the current month, with the
+maximum drawdown and annualized return from the backtest window underneath. The service is
+Korean-language, so the screen is too.*
 
 ```mermaid
 flowchart LR

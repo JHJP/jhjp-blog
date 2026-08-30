@@ -80,17 +80,44 @@ finding, and it is measurable.
 
 ### The five
 
-| Model | Method | Measured on a holdout window |
-|---|---|---|
-| **Policy reinstatement** | Cost-sensitive two-stage residual learner under severe class imbalance. L2-regularized base, L1-plus-L2 residual stage, class-proportional weighting, maturity-gap holdout | Top-decile lift 3.29x on customer-level priority-score ranking. Test AUC 0.719, overfitting gap 1.87 percentage points. The ensemble moved validation AUC from 0.7031 to 0.7191 over the base learner |
-| **Persona-based product recommendation** | K-Means with a decision-tree surrogate for interpretable personas, then per-product one-vs-rest learners for the 18 product groups with enough density and persona conversion-rate lookup for the 4 sparse ones, unified by smoothed-lift calibration | Campaign conversion 2.3% to 4.67%, a 2.02x lift over business as usual. Top-decile lift 3.58x, customer-level on priority-score ranking. Recall@3 83.3%, MAP@3 0.65, test AUC 0.743, overfitting gap 1.18 percentage points |
-| **Lapsed-customer recommendation** | Same architecture retrained on customers with zero active contracts. Value-score thresholds and clusters recomputed on that population; features rebuilt from contract history rather than current holdings. At equal volume only 1 of 22 product groups still had the density for a model, so 21 went through persona conversion-rate lookup | Recall@3 75.7%, MAP@3 0.611. Relative ranking held while absolute precision fell sharply between validation and test, and I documented that gap rather than reporting the validation figure |
-| **Outbound contact prediction** | Incumbent reachability model rebuilt as a logistic base with a gradient-boosted residual over 176k training and 34k validation records, evaluated by decile lift | Out-of-sample AUC moved from 0.586 for the base regression to 0.647 for the residual ensemble, with a 0.1 percentage-point gap between development and validation windows. On the validation window the top decile of the ranked list reached 76.5% contact success and the bottom decile 32.2%, against an overall average contact rate of 50.0% on the actual campaign |
-| **Billing collection** | Two-stage residual ensemble for premium-payment failure, plus an EconML LinearDML causal model for billing-day optimization | Billing-day assignment is endogenous. Orthogonalized it and estimated per-treatment effects with confidence intervals across billing-day buckets and payment-method routing |
+Every number below was measured on a window held out in time, never a random split.
 
-On the last one: I presented the DML implementation alongside a simpler leaf-based
-correlation model that the operating team could read directly, and the business adopted the
-leaf-based one. I documented the statistical risks of that choice in the handoff.
+**Policy reinstatement.** Cost-sensitive two-stage residual learner under severe class
+imbalance: an L2-regularized base, an L1-plus-L2 residual stage, class-proportional
+weighting, and a maturity-gap holdout. **Top-decile lift 3.29x**, customer-level on
+priority-score ranking. Test AUC 0.719 with a 1.87 percentage-point overfitting gap, and
+the residual stage moved validation AUC from 0.7031 to 0.7191 over the base learner.
+
+**Persona-based product recommendation.** K-Means with a decision-tree surrogate for
+interpretable personas, then per-product one-vs-rest learners for the 18 product groups
+with enough density and persona conversion-rate lookup for the 4 sparse ones, unified by
+smoothed-lift calibration. Campaign conversion 2.3% to 4.67%, **a 2.02x lift over business
+as usual, and top-decile lift 3.58x** on customer-level priority-score ranking.
+Recall@3 83.3%, MAP@3 0.65, test AUC 0.743, overfitting gap 1.18 percentage points.
+
+**Lapsed-customer recommendation.** The same architecture retrained on customers with zero
+active contracts, with value-score thresholds and clusters recomputed on that population and
+features rebuilt from contract history rather than current holdings. At equal volume only 1
+of 22 product groups still had the density for a model, so 21 went through persona
+conversion-rate lookup. **Recall@3 75.7%**, MAP@3 0.611. Relative ranking held while absolute
+precision fell sharply between validation and test, and I documented that gap rather than
+reporting the validation figure.
+
+**Outbound contact prediction.** The incumbent reachability model rebuilt as a logistic base
+with a gradient-boosted residual over 176k training and 34k validation records, evaluated by
+decile lift. **Out-of-sample AUC moved from 0.586 to 0.647**, with a 0.1 percentage-point gap
+between the development and validation windows. The top decile of the ranked list reached
+76.5% contact success and the bottom decile 32.2%, against an overall average contact rate of
+50.0% on the actual campaign.
+
+**Billing collection.** A two-stage residual ensemble for premium-payment failure, plus an
+**EconML LinearDML** causal model for billing-day optimization. Billing-day assignment is
+endogenous, correlated with the customer traits that also drive payment success, so I
+orthogonalized it and estimated per-treatment effects with confidence intervals across
+billing-day buckets and payment-method routing. I presented the DML implementation alongside
+a simpler leaf-based correlation model the operating team could read directly, and the
+business adopted the leaf-based one. I documented the statistical risks of that choice in the
+handoff.
 
 **Method.** I used an LLM as an adversarial reviewer for the identification strategy, and
 generated code from per-component markdown specifications that fixed feature logic, leakage

@@ -271,7 +271,7 @@ and reproducibility have to be built out.
 **Validation.** Walk-forward out-of-sample over more than twenty years from 2005: rules are
 fit on a past window and scored only on the window that follows, repeatedly. On that backtest,
 and these are backtest figures rather than live trading results, Sharpe was 1.15 in KRW and
-0.96 in USD, with maximum drawdown of -14.9% and -14.7% against -50.9% for the FX-hedged
+0.96 in USD, with maximum drawdown of -14.1% against -50.9% for the FX-hedged
 S&P 500 over the same period.
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: 'Billing Collection: Two-Stage ML, Causal Inference, and the Business Decision'
 description: Building a two-stage residual ensemble for payment prediction and a LinearDML
-  causal model for billing schedule optimization — and why the business chose neither.
+  causal model for billing schedule optimization — and why the business chose a simpler segment-based alternative.
 author: Jiheon (Jay) Park
 date: '2026-03-10'
 tags:
